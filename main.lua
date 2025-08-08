@@ -19,6 +19,9 @@ function love.load(args)
     require("util")
     require("blade")
     require("blocks")
+    readArgs(args) 
+
+
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
     screen = {

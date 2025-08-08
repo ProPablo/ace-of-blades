@@ -8,3 +8,16 @@ function setToSecondMonitor()
         resizable = true,
     })
 end
+
+function readArgs(args)
+     for i, v in ipairs(args) do
+        if v == "-s" then
+            isServer = true
+            print("Server mode enabled")
+        end
+    end
+
+    if not isServer then
+        print("Client mode enabled")
+    end
+end
