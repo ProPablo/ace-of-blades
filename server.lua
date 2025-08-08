@@ -16,7 +16,7 @@ function acceptClient()
     -- Accept a new client connection
     local data, msg_or_ip, port = udp:receivefrom()
     if data then
-        print("New client connected: " .. msg_or_ip)
+        print("New client connected: " .. msg_or_ip .. ":" .. port .. " - " .. data)
         -- id = #clients + 1 -- Assign a new ID to the client
         id = 2
         client = {
