@@ -2,7 +2,11 @@
 -- nodemon --exec "love ." --ext lua --ignore node_modules
 
 
-local game = {}
+game = {}
+menu = {}
+
+isServer = false
+
 
 local val = 0 -- establish a variable for later use
 local x, y
@@ -13,7 +17,6 @@ blocksWidth = 50
 function love.load()
     if arg[#arg] == "-debug" then require("mobdebug").start() end
     require("util")
-    Camera = require("libs/hump/camera")
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
     screen = {
@@ -23,10 +26,13 @@ function love.load()
 
     world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
 
-    setupBlocks()
 
     Gamestate.registerEvents()
     Gamestate.switch(game)
+end
+
+function game:enter()
+    setupBlocks()
 end
 
 function setupBlocks() 
@@ -53,7 +59,7 @@ function setupBlocks()
     blocks.block4.fixture = love.physics.newFixture(blocks.block4.body, blocks.block4.shape, 5)
 end
 
-function love.draw()
+function game:draw()
     love.graphics.print(val, 100, 200)
     love.graphics.print(x, 100, 300)
     love.graphics.print(y, 100, 400)
@@ -63,8 +69,8 @@ function love.draw()
     end
 end
 
-function love.update(dt)
-    world:update(dt) -- this puts the world into motion
+function game:update(dt)
+    -- world:update(dt) -- this puts the world into motion
     x, y = love.mouse.getPosition()
     if love.mouse.isDown(1) then
         val = val + dt * valSpeed -- we will increase the variable by 1 for every second the button is held down
