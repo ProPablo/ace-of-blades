@@ -2,10 +2,13 @@
 -- nodemon --exec "love ." --ext lua --ignore node_modules
 
 
-local game = {}
+game = {}
+menu = {}
+
+isServer = false
+
 
 function love.load()
-    Camera = require("libs/hump/camera")
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
     screen = {
@@ -16,10 +19,13 @@ function love.load()
 
     world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
 
-    setupBlocks()
 
     Gamestate.registerEvents()
     Gamestate.switch(game)
+end
+
+function game:enter()
+    setupBlocks()
 end
 
 function setupBlocks() 
