@@ -43,35 +43,35 @@ function drawRip()
         mx, my = love.mouse.getX(), love.mouse.getY()
     end
 
-    if sx and sy and mx and my then
-        -- Draw drag line (start to mouse)
-        love.graphics.setColor(0, 0.4, 0) -- dark green
-        love.graphics.line(sx, sy, mx, my)
+  if sx and sy and mx and my then
+    -- Draw drag line (start to mouse)
+    love.graphics.setColor(0, 0.4, 0)     -- dark green
+    love.graphics.line(sx, sy, mx, my)
 
-        -- Calculate mirror point
-        local dx = mx - sx
-        local dy = my - sy
-        mirrorX = sx - dx
-        mirrorY = sy - dy
+    -- Calculate mirror point
+    local dx = mx - sx
+    local dy = my - sy
+    mirrorX = sx - dx
+    mirrorY = sy - dy
 
-        -- Draw force direction arrow (start to mirror)
-        love.graphics.setColor(0, 1, 0) -- bright green
-        love.graphics.line(sx, sy, mirrorX, mirrorY)
+    -- Draw force direction arrow (start to mirror)
+    love.graphics.setColor(0, 1, 0)     -- bright green
+    love.graphics.line(sx, sy, mirrorX, mirrorY)
 
-        -- Draw arrowhead at mirror point
-        local angle = math.atan2(mirrorY - sy, mirrorX - sx)
-        local arrowLength = 20
-        local arrowAngle = math.rad(30)
+    -- Draw arrowhead at mirror point
+    local angle = math.atan2(mirrorY - sy, mirrorX - sx)
+    local arrowLength = 20
+    local arrowAngle = math.rad(30)
 
-        local ax1 = mirrorX - arrowLength * math.cos(angle - arrowAngle)
-        local ay1 = mirrorY - arrowLength * math.sin(angle - arrowAngle)
-        local ax2 = mirrorX - arrowLength * math.cos(angle + arrowAngle)
-        local ay2 = mirrorY - arrowLength * math.sin(angle + arrowAngle)
+    local ax1 = mirrorX - arrowLength * math.cos(angle - arrowAngle)
+    local ay1 = mirrorY - arrowLength * math.sin(angle - arrowAngle)
+    local ax2 = mirrorX - arrowLength * math.cos(angle + arrowAngle)
+    local ay2 = mirrorY - arrowLength * math.sin(angle + arrowAngle)
 
-        love.graphics.line(mirrorX, mirrorY, ax1, ay1)
-        love.graphics.line(mirrorX, mirrorY, ax2, ay2)
-    end
+    love.graphics.line(mirrorX, mirrorY, ax1, ay1)
+    love.graphics.line(mirrorX, mirrorY, ax2, ay2)
+  end
 
 
-    love.graphics.setColor(1, 1, 1)
+  love.graphics.setColor(1, 1, 1)
 end
