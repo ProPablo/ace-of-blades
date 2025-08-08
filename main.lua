@@ -57,7 +57,16 @@ function game:draw()
 end
 
 function game:update(dt)
+
     world:update(dt)
+
+    if isServer then
+        acceptClient()
+        sendServerUpdate(dt)
+    else
+        receiveClientUpdates()
+    end
+
     x, y = love.mouse.getPosition()
     if love.mouse.isDown(1) then
         val = val + dt * valSpeed -- we will increase the variable by 1 for every second the button is held down
