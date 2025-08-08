@@ -4,6 +4,8 @@ game = {}
 menu = {}
 
 isServer = false
+port = 12345
+
 
 -- GAME STATE
 hasRipped = false
@@ -22,13 +24,16 @@ forceMod = 10000
 isDragging = false
 hasRipped = false
 
-function love.load()
+function love.load(args)
     if arg[#arg] == "-debug" then
         require("mobdebug").start()
     end
     require("util")
     require("blade")
     require("blocks")
+    readArgs(args) 
+
+
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
     screen = {
@@ -36,8 +41,15 @@ function love.load()
         height = love.graphics.getHeight()
     }
 
-    love.physics.setMeter(64)
-    world = love.physics.newWorld(0, 1, true)
+    if isServer then
+        require("server")
+        setupServer()
+    else
+        require("client")
+        setupClient()
+    end
+
+    world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
 
     Gamestate.registerEvents()
     Gamestate.switch(game)
@@ -56,6 +68,14 @@ function game:draw()
 end
 
 function game:update(dt)
+
+    if isServer then
+        acceptClient()
+        sendServerUpdate(dt)
+    else
+        receiveClientUpdates()
+    end
+
     world:update(dt)
     cursorX, cursorY = love.mouse.getPosition()
     if (hasRipped) then
