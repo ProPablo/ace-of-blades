@@ -14,19 +14,19 @@ end
 
 function acceptClient()
     -- Accept a new client connection
-    local data, ip, port = udp:receivefrom()
-    if ip then
-        print("New client connected: " .. ip)
+    local data, msg_or_ip, port = udp:receivefrom()
+    if data then
+        print("New client connected: " .. msg_or_ip)
         -- id = #clients + 1 -- Assign a new ID to the client
         id = 2
         client = {
             id = id,
-            ip = ip,
+            ip = msg_or_ip,
             port = port,
             lastActive = love.timer.getTime()
         }
         -- table.insert(clients, client)
-    elseif err ~= "timeout" then
+    elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end
 end
