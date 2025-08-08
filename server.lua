@@ -38,12 +38,12 @@ function sendServerUpdate(dt)
     -- TODO fix
     balls[1] = {
         id = 1,
-        x = beyblade.body.getX(),
-        y  = beyblade.body.getY(),
+        x = beyblade.body:getX(),
+        y  = beyblade.body:getY(),
     }
     
     serverTime = love.timer.getTime()
-    t = t + deltatime 
+    t = t + dt 
 	
 	if t > updateRate then
         local data = ""
