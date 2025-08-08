@@ -6,9 +6,14 @@ game = {}
 menu = {}
 
 isServer = false
+port = 12345
 
 
-function love.load()
+function love.load(args)
+     local msg = args[1]
+     print("Arguments passed to the game: " .. msg)
+
+
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
     screen = {
@@ -16,9 +21,15 @@ function love.load()
         height = love.graphics.getHeight()
     }
 
+    if isServer then
+        require("server")
+        setupServer()
+    else
+        require("client")
+        setupClient()
+    end
 
     world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
-
 
     Gamestate.registerEvents()
     Gamestate.switch(game)
