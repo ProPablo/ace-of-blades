@@ -18,8 +18,7 @@ startDragY = 0
 endDragX = 0
 endDragY = 0
 
-valSpeed = 500
-forceMod = 10000
+forceMod = 30000
 
 isDragging = false
 hasRipped = false
