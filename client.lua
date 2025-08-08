@@ -15,7 +15,7 @@ function setupClient()
     end
 
     -- Initialize client state
-    balls = {} -- Initialize the balls table
+    beyblades = {} -- Initialize the balls table
 end
 
 function receiveClientUpdates()
@@ -28,10 +28,10 @@ function receiveClientUpdates()
             x = tonumber(x)
             y = tonumber(y)
             -- Update or create the ball in the balls table
-            if not balls[id] then
-                balls[id] = { id = id, body = love.physics.newBody(world, x, y, "dynamic") }
+            if not beyblades[id] then
+                beyblades[id] = { id = id, body = love.physics.newBody(world, x, y, "dynamic") }
             end
-            balls[id].body:setPosition(x, y)
+            beyblades[id].body:setPosition(x, y)
         end
     elseif err ~= "timeout" then
         error("Error receiving from server: " .. err)

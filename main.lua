@@ -1,7 +1,7 @@
 -- Run this to hot reload
 -- nodemon --exec "love ." --ext lua --ignore node_modules
 game = {}
-menu = {}
+lobby = {}
 
 isServer = false
 port = 12345
@@ -31,7 +31,7 @@ function love.load(args)
     require("util")
     require("blade")
     require("blocks")
-    readArgs(args) 
+    readArgs(args)
 
 
     Gamestate = require("libs/hump/gamestate")
@@ -57,7 +57,9 @@ end
 
 function game:enter()
     setupBlocks()
-    setupBlade()
+    beyblades[1] = setupBlade(1)     -- Server's beyblade
+    beyblades[1].body:setPosition(100, 100) -- Set initial position for server's beyblade
+    beyblades[2] = setupBlade(2)     -- Client's beyblade
 end
 
 function game:draw()
@@ -68,12 +70,13 @@ function game:draw()
 end
 
 function game:update(dt)
-
     if isServer then
+        beyblade = beyblades[1]
         acceptClient()
         sendServerUpdate(dt)
     else
         receiveClientUpdates()
+        beyblade = beyblades[2]
     end
 
     world:update(dt)
@@ -100,7 +103,7 @@ function game:update(dt)
         if length > 0 then -- Ignoring same spot start & end
             print(length)
             -- Normalize and apply force in the opposite direction
-            -- dx / length is a direction vector 
+            -- dx / length is a direction vector
             local fx = -dx * forceMod
             local fy = -dy * forceMod
             beyblade.body:applyForce(fx, fy)
@@ -110,5 +113,4 @@ function game:update(dt)
         hasRipped = true
         isDragging = false
     end
-
 end

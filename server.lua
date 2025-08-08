@@ -6,7 +6,7 @@ function setupServer()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
     udp:settimeout(0) -- Set to non-blocking mode
     print("Server started on port " .. port)
-    balls = {} -- Initialize the balls table
+    beyblades = {} -- Initialize the balls table
     -- clients = {} -- Initialize the clients table
     client = nil
 
@@ -34,21 +34,13 @@ end
 local t = 0
 local serverTime = love.timer.getTime( )
 function sendServerUpdate(dt)
-    -- update beyblade from her fore now
-    -- TODO fix
-    balls[1] = {
-        id = 1,
-        x = beyblade.body:getX(),
-        y  = beyblade.body:getY(),
-    }
-    
     serverTime = love.timer.getTime()
     t = t + dt 
 	
 	if t > updateRate then
         local data = ""
-        for _, ball in ipairs(balls) do
-            data = data .. string.format("ball %d %f %f;", ball.id, ball.x, ball.y)
+        for _, ball in ipairs(beyblades) do
+            data = data .. string.format("ball %d %f %f;", ball.id, ball.body:getX(), ball.body:getY())
         end
         data = data .. string.format("serverTime %f", serverTime)
 

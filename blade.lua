@@ -2,8 +2,8 @@ beyblade = {
     width = 200,
     length = 200,
     asset,
-    body, -- component that holds information about the body (vel, pos, accel etc.)
-    shape, -- collision (one shape many fixtures, )
+    body,   -- component that holds information about the body (vel, pos, accel etc.)
+    shape,  -- collision (one shape many fixtures, )
     fixture -- size, scallable, drag (one body many fixtures)
 }
 
@@ -11,30 +11,33 @@ local friction = 0.01
 
 local circleRad = 35
 
-function setupBlade()
+function setupBlade(id)
+    local newBlade = {}
+    newBlade.id = id
     -- beyblade.asset = love.graphics.newImage("bey.png")
-    beyblade.body = love.physics.newBody(world, 650 / 2, 650 / 2, "dynamic")
-    beyblade.shape = love.physics.newCircleShape(circleRad)
-    beyblade.fixture = love.physics.newFixture(beyblade.body, beyblade.shape, 100)
-    beyblade.fixture:setRestitution(1)
-    beyblade.fixture:setDensity(0)
-    beyblade.body:setLinearDamping(0.05)
-    beyblade.fixture:setFriction(friction)
+    newBlade.body = love.physics.newBody(world, 650 / 2, 650 / 2, "dynamic")
+    newBlade.shape = love.physics.newCircleShape(circleRad)
+    newBlade.fixture = love.physics.newFixture(newBlade.body, newBlade.shape, 100)
+    newBlade.fixture:setRestitution(1)
+    newBlade.fixture:setDensity(0)
+    newBlade.body:setLinearDamping(0.05)
+    newBlade.fixture:setFriction(friction)
+    return newBlade
 end
 
 function drawBlade()
-    local angle = love.timer.getTime() * 2 * math.pi / 2.5
-    love.graphics.setColor(0.76, 0.18, 0.05)
-    love.graphics.circle("fill", beyblade.body:getX(), beyblade.body:getY(), circleRad)
-    if not isDragging and not hasRipped then
-      love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
+    for _, localblade in pairs(beyblades) do
+        love.graphics.setColor(0.76, 0.18, 0.05)
+        love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
     end
-    love.graphics.reset()
+    if not isDragging and not hasRipped then
+        love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
+    end
+    love.graphics.reset() -- Reset color to white
 end
 
 function drawRip()
-  
-  local sx, sy, mx, my, mirrorX, mirrorY
+    local sx, sy, mx, my, mirrorX, mirrorY
     if isDragging then
         sx, sy = beyblade.body:getX(), beyblade.body:getY()
         mx, my = love.mouse.getX(), love.mouse.getY()
