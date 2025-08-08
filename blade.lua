@@ -26,6 +26,10 @@ function drawBlade()
     local angle = love.timer.getTime() * 2 * math.pi / 2.5
     love.graphics.setColor(0.76, 0.18, 0.05)
     love.graphics.circle("fill", beyblade.body:getX(), beyblade.body:getY(), circleRad)
+    if not isDragging then
+      
+      love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
+    end
     love.graphics.reset()
 end
 

@@ -76,7 +76,7 @@ function game:update(dt)
         local dx = endDragX - startDragX
         local dy = endDragY - startDragY
         -- Distance between click down and release
-        local length = dx + dy
+        local length = math.sqrt(dx * dx + dy * dy)
         if length > 0 then -- Ignoring same spot start & end
             print(length)
             -- Normalize and apply force in the opposite direction
