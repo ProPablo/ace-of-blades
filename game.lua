@@ -1,11 +1,5 @@
 local MIN_ANGV = 1
 
-function drawGameState(ripped)
-  local setMsg = hasSet and "SET" or "READYING..."
-  if ripped then setMsg = "RIPPED" end
-  love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
-end
-
 function bladeHitWall(localblade)
   local currentAngularVelocity = localblade:getAngularVelocity()
   local reductionFactor = 0.99 -- for wall

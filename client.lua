@@ -12,25 +12,22 @@ function setupClient()
      -- Send join request
     local success, err = udp:send("join")
     if not success then
-        print("Failed to send join request:", err)
-        love.event.quit()
+        error("Failed to send join request:", err)
         return
     end
+    love.timer.sleep(0.1) 
     
     print("Waiting for server...")
     
     -- Wait for ack
     local response = udp:receive()
     if response == "ack" then
-        connected = true
         udp:settimeout(0) -- Set to non-blocking
         print("Connected to server!")
+        Gamestate.switch(ready)
     else
-        print("No server response")
-        love.event.quit()
+        error("No server response")
     end
-
-    beyblades = {} -- Initialize the balls table
 end
 
 function receiveClientUpdates()
@@ -46,6 +43,7 @@ function receiveClientUpdates()
             if not beyblades[id] then
                 beyblades[id] = { id = id, body = love.physics.newBody(world, x, y, "dynamic") }
             end
+            -- TODO interpolate
             beyblades[id].body:setPosition(x, y)
         end
     elseif err ~= "timeout" then

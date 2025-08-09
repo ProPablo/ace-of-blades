@@ -15,6 +15,10 @@ function readArgs(args)
             isServer = true
             print("Server mode enabled")
         end
+        if v == "-d" then
+            debugMode = false
+            print("Debug mode disabled")
+        end
     end
 
     if not isServer then

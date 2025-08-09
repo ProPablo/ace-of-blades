@@ -24,7 +24,7 @@ function ready:update(dt)
   world:update(dt)
   if isServer then
     beyblade = beyblades[1]
-    sendServerUpdate(dt)
+    rippedSendServerUpdate(dt)
   else
     receiveClientUpdates()
     beyblade = beyblades[2]
@@ -90,7 +90,8 @@ function ready:draw()
   drawBlocks()
   drawBlade()
   drawRip()
-  drawGameState()
+
+  love.graphics.print("Ready...", screen.width / 2, 200, 0, 2, 2)
 end
 
 function drawRip()
