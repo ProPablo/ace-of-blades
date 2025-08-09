@@ -14,7 +14,7 @@ function countdown:enter()
 end
 
 function countdown:draw()
-  local showDisplayTime = string.format("%d", displayTime)
+  local showDisplayTime = string.format("%f.2", displayTime)
   love.graphics.print(showDisplayTime, screen.width / 2, 200, 0, 2, 2)
   love.graphics.print(bigNumber, screen.width / 2, 300, 0, 10, 10)
 
