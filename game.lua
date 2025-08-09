@@ -1,16 +1,5 @@
 local MIN_ANGV = 1
 
-function bladeHitWall(localblade)
-  -- local currentAngularVelocity = localblade:getAngularVelocity()
-  -- local reductionFactor = 0.99 -- for wall
-  -- local newAngularVelocity = currentAngularVelocity * reductionFactor
-  -- if (math.abs(newAngularVelocity) < MIN_ANGV) then
-  --   newAngularVelocity = 0
-  -- else
-  --   localblade:setAngularVelocity(newAngularVelocity)
-  -- end
-end
-
 function transferSpin(fromBody, toBody)
   local fromAngularVelocity = fromBody:getAngularVelocity()
   local minBoost = 10 -- minimum spin boost to give on collision
@@ -36,23 +25,4 @@ function transferSpin(fromBody, toBody)
 
   local newToAngularVelocity = toAngularVelocity + spinToAdd
   toBody:setAngularVelocity(newToAngularVelocity)
-end
-
--- Collision callback
-function beginContact(a, b, coll)
-  local bodyA = a:getBody()
-  local bodyB = b:getBody()
-  -- Check if either body is a Beyblade
-  local isBodyABeyblade = (bodyA == beyblade.body)
-  local isBodyBBeyblade = (bodyB == beyblade.body)
-
-  if isBodyABeyblade and isBodyBBeyblade then
-    -- Both are beyblades, transfer spin both ways
-    transferSpin(bodyA, bodyB)
-    transferSpin(bodyB, bodyA)
-  elseif isBodyABeyblade then
-    bladeHitWall(bodyA)
-  elseif isBodyBBeyblade then
-    bladeHitWall(bodyB)
-  end
 end

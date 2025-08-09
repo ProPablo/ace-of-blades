@@ -38,7 +38,7 @@ local function prepBladeVisual(newBlade)
 
 
   if newBlade.chosenShape == SHAPE.STICK then
-    newBlade.stickShape = love.physics.newRectangleShape(0, 0, 20, 100, 0)
+    newBlade.stickShape = love.physics.newRectangleShape(0, circleRad, 20, 100, 0)
     newBlade.circleShape = love.physics.newCircleShape(circleRad)
   end
   if newBlade.chosenShape == SHAPE.CIRCLE then

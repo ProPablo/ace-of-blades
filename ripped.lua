@@ -84,12 +84,39 @@ local function serverSendPosUpdate(dt)
   end
 end
 
+
+-- Collision callback
+local function beginContact(a, b, coll)
+  local bodyA = a:getBody()
+  local bodyB = b:getBody()
+  -- Check if either body is a Beyblade
+  local isBodyABeyblade1 = (bodyA == beyblades[1].body)
+  local isBodyBBeyblade1 = (bodyB == beyblades[1].body)
+
+
+  local isBodyABeyblade1 = (bodyA == beyblades[1].body)
+  local isBodyBBeyblade1 = (bodyB == beyblades[1].body)
+
+  -- if isBodyABeyblade and isBodyBBeyblade then
+  --   -- Both are beyblades, transfer spin both ways
+  --   transferSpin(bodyA, bodyB)
+  --   transferSpin(bodyB, bodyA)
+  -- elseif isBodyABeyblade then
+  --   bladeHitWall(bodyA)
+  -- elseif isBodyBBeyblade then
+  --   bladeHitWall(bodyB)
+  -- end
+end
+
+
 function ripped:enter()
   if isServer then
     beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
 
     beyblades[2].body:applyForce(beyblades[2].launchVec.x, beyblades[2].launchVec.y)
     beyblades[2].health = 20
+
+    world:setCallbacks(beginContact)
   else
   end
 end
