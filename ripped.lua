@@ -55,18 +55,18 @@ local function serverSendPosUpdate(dt)
     t = t - updateRate
 
     local ballData = {}
-    for _, ball in ipairs(beyblades) do
-      local vx, vy = ball.body:getLinearVelocity()
-      local av = ball.body:getAngularVelocity()
+    for _, localBlade in ipairs(beyblades) do
+      local vx, vy = localBlade.body:getLinearVelocity()
+      local av = localBlade.body:getAngularVelocity()
       table.insert(ballData, {
-        id = ball.id,
-        x = ball.body:getX(),
-        y = ball.body:getY(),
+        id = localBlade.id,
+        x = localBlade.body:getX(),
+        y = localBlade.body:getY(),
         vx = vx,
         vy = vy,
         av = av,
-        angle = ball.body:getAngle(),
-        health = ball.health
+        angle = localBlade.body:getAngle(),
+        health = localBlade.health
       })
     end
 
@@ -114,7 +114,7 @@ function ripped:enter()
     beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
 
     beyblades[2].body:applyForce(beyblades[2].launchVec.x, beyblades[2].launchVec.y)
-    beyblades[2].health = 20
+    -- beyblades[2].health = 20
 
     world:setCallbacks(beginContact)
   else
@@ -129,6 +129,9 @@ function ripped:draw()
   drawBlade(2)
 
   love.graphics.print("Ripped...", screen.width / 2, 200, 0, 2, 2)
+  love.graphics.print(beyblades[1].health, screen.width / 2, 220, 0, 2, 2)
+  love.graphics.print(beyblades[2].health, screen.width / 2, 240, 0, 2, 2)
+  
 end
 
 beybladeDOT = 5

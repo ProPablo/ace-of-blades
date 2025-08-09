@@ -24,8 +24,6 @@ local function prepBeyblade(newBlade)
   else 
     newBlade.direction = -1 -- 1 for clockwise, -1 for counter-clockwise
   end
-
-  return newBlade
 end
 
 local function prepBladeVisual(newBlade)
