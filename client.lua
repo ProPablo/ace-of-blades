@@ -6,7 +6,7 @@ function setupClient()
     love.window.setTitle("Ace of Blades Client")
 
     if not serverAddress then
-        serverAddress = "127.0.0.1"
+        serverAddress = "localhost"
     end
     udp = socket.udp()
     udp:settimeout(5) -- Block for up to 5 seconds
@@ -57,7 +57,7 @@ local function addToBuffer(bufferedState)
 end
 
 
-function acceptRpcClient()
+function sup()
     local data, err = udp:receive()
     if data then
         for segment in data:gmatch("([^;]+)") do

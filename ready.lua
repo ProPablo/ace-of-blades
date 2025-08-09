@@ -34,7 +34,7 @@ function ready:update(dt)
   if isServer then
     beyblade = beyblades[1]
     acceptRpcServer(dt)
-    serverSendPosUpdate(dt)
+    -- serverSendPosUpdate(dt)
     if clientHasSetLaunchVec and serverHasSetLaunchVec then
       sendStateTransitionRpcFromServer(dt)
       Gamestate.switch(countdown)
@@ -186,7 +186,7 @@ function sendStateTransitionRpcFromServer(dt)
   print("Sent state transition command to client: " .. ServerRpcCommands.STATE_TRANSITION .. " to " .. client.ip .. ":" .. client.port)
 end
 
-function acceptRpcClient(dt)
+local function acceptRpcClient(dt)
   local data, err = udp:receive()
   if data then
     print("Received data from server: " .. data)
