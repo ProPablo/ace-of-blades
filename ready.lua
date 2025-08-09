@@ -47,69 +47,69 @@ local function drawRip()
 end
 
 local function sendStateTransitionRpcFromServer(dt)
-    local message = {
-        cmd = ServerRpcCommands.STATE_TRANSITION
-    }
-    local jsonData = json.encode(message)
-    udp:sendto(jsonData, client.ip, client.port)
-    print("Sent state transition command to client")
+  local message = {
+    cmd = ServerRpcCommands.STATE_TRANSITION
+  }
+  local jsonData = json.encode(message)
+  udp:sendto(jsonData, client.ip, client.port)
+  print("Sent state transition command to client")
 end
 
 
 local function sendVectorRpcFromClient()
-    local message = {
-        cmd = ClientRpcCommands.LAUNCH_VEC,
-        launchVec = {
-            x = beyblade.launchVec.x,
-            y = beyblade.launchVec.y
-        },
-        position = {
-            x = beyblade.body:getX(),
-            y = beyblade.body:getY()
-        }
+  local message = {
+    cmd = ClientRpcCommands.LAUNCH_VEC,
+    launchVec = {
+      x = beyblade.launchVec.x,
+      y = beyblade.launchVec.y
+    },
+    position = {
+      x = beyblade.body:getX(),
+      y = beyblade.body:getY()
     }
-    
-    local jsonData = json.encode(message)
-    print("Sending vector to server: " .. jsonData)
-    udp:send(jsonData)
+  }
+
+  local jsonData = json.encode(message)
+  print("Sending vector to server: " .. jsonData)
+  udp:send(jsonData)
 end
 
 local function acceptRpcServer(dt)
-    local data, msg_or_ip, port = udp:receivefrom()
-    if data then
-        local message = json.decode(data)
-        print("Received command: " .. message.cmd)
-        
-        if message.cmd == ClientRpcCommands.LAUNCH_VEC then
-            local launchVec = message.launchVec
-            local position = message.position
-            
-            print(string.format("Parsed launch vector: x=%.2f, y=%.2f at position x=%.2f, y=%.2f", 
-                  launchVec.x, launchVec.y, position.x, position.y))
-            
-            beyblades[2].launchVec = { x = launchVec.x, y = launchVec.y }
-            beyblades[2].body:setPosition(position.x, position.y)
-            clientHasSetLaunchVec = true
-        else
-            print("Unknown command: " .. message.cmd)
-        end
+  local data, msg_or_ip, port = udp:receivefrom()
+  if data then
+    local message = json.decode(data)
+    print("Received command: " .. message.cmd)
+
+    if message.cmd == ClientRpcCommands.LAUNCH_VEC then
+      local launchVec = message.launchVec
+      local position = message.position
+
+      print(string.format("Parsed launch vector: x=%.2f, y=%.2f at position x=%.2f, y=%.2f",
+        launchVec.x, launchVec.y, position.x, position.y))
+
+      beyblades[2].launchVec = { x = launchVec.x, y = launchVec.y }
+      beyblades[2].body:setPosition(position.x, position.y)
+      clientHasSetLaunchVec = true
+    else
+      print("Unknown command: " .. message.cmd)
     end
+  end
 end
 
 local function acceptRpcClient(dt)
-    local data, err = udp:receive()
-    if data then
-        local message = json.decode(data)
-        print("Received data from server: " .. message.cmd)
-        
-        if message.cmd == ServerRpcCommands.STATE_TRANSITION then
-            print("Received state transition command from server")
-            Gamestate.switch(countdown)
-            return 
-        end
-    elseif err ~= "timeout" then
-        print("Error receiving from server: " .. err)
+  local data, err = udp:receive()
+  if data then
+    local message = json.decode(data)
+    print("Received data from server: " .. message.cmd)
+
+    if message.cmd == ServerRpcCommands.STATE_TRANSITION then
+      print("Received state transition command from server")
+      Gamestate.switch(countdown)
+      return
     end
+  elseif err ~= "timeout" then
+    print("Error receiving from server: " .. err)
+  end
 end
 
 
@@ -198,12 +198,14 @@ function ready:update(dt)
 end
 
 function ready:draw()
-
   local setMsg = ""
+  local showCursor = false
   if isServer then
     setMsg = serverHasSetLaunchVec and "SET" or "READYING..."
+    if not isDragging and not serverHasSetLaunchVec then showCursor = true end
   else
     setMsg = clientHasSetLaunchVec and "SET" or "READYING..."
+    if not isDragging and not clientHasSetLaunchVec then showCursor = true end
   end
   drawDebug()
   drawBlocks()
@@ -211,14 +213,12 @@ function ready:draw()
   drawRip()
 
   -- Draw drag cursor
-  if not isDragging and not clientHasSetLaunchVec then
+  if showCursor then
     love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
   end
 
   love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
 end
-
-
 
 function ready:leave()
   if isServer then
