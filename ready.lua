@@ -94,8 +94,8 @@ function ready:draw()
   drawBlocks()
   drawBlade()
   drawRip()
-
-  love.graphics.print("Ready...", screen.width / 2, 200, 0, 2, 2)
+  local setMsg = hasSet and "SET" or "READYING..."
+  love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
 end
 
 function drawRip()
