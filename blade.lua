@@ -37,6 +37,7 @@ function setupBlade(id)
   newBlade.body:setAngularDamping(0.5) -- slows spin over time
   newBlade.body:setLinearDamping(0.2)  -- slows movement over time
   newBlade.fixture:setFriction(friction)
+
   return newBlade
 end
 
@@ -45,6 +46,8 @@ local clientBladeColor = { 0.05, 0.18, 0.76 } -- Blue
 
 function drawBlade(id)
   local localblade = beyblades[id]
+  love.graphics.print("selection " .. localblade.chosenShape , screen.width / 2, 300, 0, 2, 2)
+  
   local x = localblade.body:getX()
   local y = localblade.body:getY()
   local angle = localblade.body:getAngle()
@@ -58,12 +61,12 @@ function drawBlade(id)
   love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
 
   -- localised spiral parameters (slightly protruding from beyblade)
-  local mode = 1               -- Archimedes spiral
-  local protrudeFactor = 1.3   -- 1.0 = inside, >1.0 = slight protrusion
+  local mode = 1             -- Archimedes spiral
+  local protrudeFactor = 1.3 -- 1.0 = inside, >1.0 = slight protrusion
   local maxRadius = circleRad * protrudeFactor
   local dep = 80
   local angularStep = 0.15
-  local K = maxRadius / (dep * angularStep)   -- scale so spiral ends just beyond blade
+  local K = maxRadius / (dep * angularStep) -- scale so spiral ends just beyond blade
 
   -- store drawing state
   -- love.graphics.push()

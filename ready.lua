@@ -113,21 +113,21 @@ local function acceptRpcClient(dt)
 end
 
 
-local function resetGameState()
-  setupBlocks()
-  clientHasSetLaunchVec = false
+-- local function resetGameState()
+--   setupBlocks()
+--   clientHasSetLaunchVec = false
 
-  for _, blade in ipairs(beyblades) do
-    blade.body:destroy() -- optional in LÖVE 12.0+, else just nil it
-  end
-  beyblades = {}
-  beyblades[1] = setupBlade(1) -- Server's beyblade
-  beyblades[2] = setupBlade(2) -- Client's beyblade
-end
+--   -- for _, blade in ipairs(beyblades) do
+--   --   blade.body:destroy() -- optional in LÖVE 12.0+, else just nil it
+--   -- end
+--   -- beyblades = {}
+--   beyblades[1] = setupBlade(1) -- Server's beyblade
+--   beyblades[2] = setupBlade(2) -- Client's beyblade
+-- end
 
 
 function ready:enter()
-  resetGameState()
+  -- resetGameState() removing this to keep beyblade state
 end
 
 function ready:update(dt)
@@ -142,9 +142,9 @@ function ready:update(dt)
       Gamestate.switch(countdown)
     end
 
-    if (love.keyboard.isDown("r")) then
-      resetGameState()
-    end
+    -- if (love.keyboard.isDown("r")) then
+    --   resetGameState()
+    -- end
     if serverHasSetLaunchVec then return end
 
     if (love.mouse.isDown(1) and isDragging == false) then
@@ -214,7 +214,7 @@ function ready:draw()
 
   -- Draw drag cursor
   if showCursor then
-    love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
+      love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
   end
 
   love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
