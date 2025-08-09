@@ -1,44 +1,53 @@
-TIMER_CONST = 5 -- 3,2,1
+TIMER_CONST = 5 -- 1s Ready + 3s countdown + 1s Let it rip
 
 local displayTime = 0
+local phase = "ready"
 local bigNumber = 0
-local hasNumberDisplayed = {
-  one = false,
-  two = false,
-  three = false,
-}
 
 function countdown:enter()
-  gamestartTime = serverTime + 5
-  displayTime = serverTime - gamestartTime
+  gamestartTime = serverTime + TIMER_CONST
 end
 
 function countdown:draw()
-  local showDisplayTime = string.format("%.2f", displayTime)
-  love.graphics.print(showDisplayTime, screen.width / 2, 200, 0, 2, 2)
-  love.graphics.print(bigNumber, screen.width / 2, 300, 0, 10, 10)
+  local text = ""
 
+  if phase == "ready" then
+    text = "Ready?"
+  elseif phase == "countdown" then
+    text = tostring(bigNumber)
+  elseif phase == "letitrip" then
+    text = "LET IT RIP!"
+  end
+
+  if text ~= "" then
+    local winWidth = love.graphics.getWidth()
+    local winHeight = love.graphics.getHeight()
+
+    local font = love.graphics.getFont()
+    local textWidth = font:getWidth(text) * 10
+    local textHeight = font:getHeight() * 10
+
+    love.graphics.print(
+      text,
+      (winWidth / 2) - (textWidth / 2),
+      (winHeight / 2) - (textHeight / 2),
+      0,
+      10, 10
+    )
+  end
 end
 
 function countdown:update(dt)
-  displayTime = serverTime - gamestartTime
-  if displayTime >= -3 and hasNumberDisplayed.three == false then
-    hasNumberDisplayed.three = true
-    bigNumber = 3
-  end
-  if displayTime >= -2 and hasNumberDisplayed.two == false then
-    hasNumberDisplayed.two = true
-    bigNumber = 2
-  end
-  if displayTime >= -1 and hasNumberDisplayed.one == false then
-    hasNumberDisplayed.one = true
-    bigNumber = 1
-  end
-  if (displayTime < 0) then
-    Gamestate.switch(ripped)
-  end
-end
+  displayTime = gamestartTime - serverTime
 
-function sendRpcFromServer() 
-
+  if displayTime > 4 then
+    phase = "ready"         -- 1 second
+  elseif displayTime > 1 then
+    phase = "countdown"     -- 3, 2, 1
+    bigNumber = math.ceil(displayTime - 1)
+  elseif displayTime > 0 then
+    phase = "letitrip"           -- 1 second
+  else
+    Gamestate.switch(ripped)     -- go immediately, no buffer
+  end
 end
