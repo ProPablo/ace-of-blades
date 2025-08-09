@@ -1,24 +1,71 @@
-ANGULAR_VEL = 100
+ANGULAR_VEL = 10000
+
+
+
+local function acceptRpcClient()
+    local data, err = udp:receive()
+    if data then
+        for segment in data:gmatch("([^;]+)") do
+            -- Try matching a ball packet: id, x, y, vx, vy, av
+            local cmd, id, x, y, vx, vy, av, ap = segment:match(
+                "^%s*(%S+)%s+(%d+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$"
+            )
+            if cmd == "ball" then
+                id = tonumber(id)
+                x  = tonumber(x)
+                y  = tonumber(y)
+                vx = tonumber(vx)
+                vy = tonumber(vy)
+                av = tonumber(av)
+                ap = tonumber(ap)
+                print(string.format("Received ball: id=%d, x=%.2f, y=%.2f, vx=%.2f, vy=%.2f, av=%.2f, ap=%.2f", id, x, y, vx, vy, av, ap))
+
+                if not beyblades[id] then
+                    beyblades[id] = {
+                        id = id,
+                        body = love.physics.newBody(world, x, y, "dynamic")
+                    }
+                end
+
+                local body = beyblades[id].body
+                body:setPosition(x, y)
+                body:setLinearVelocity(vx, vy)
+                body:setAngularVelocity(av)
+                body:setAngle(ap)
+
+            else
+                -- Handle serverTime
+                local timeCmd, timeVal = segment:match("^%s*(%S+)%s+(%S+)%s*$")
+                if timeCmd == "serverTime" then
+                    serverTime = tonumber(timeVal)
+                end
+            end
+        end
+
+    elseif err ~= "timeout" then
+        print("Error receiving from server: " .. err)
+    end
+end
+
 
 function ripped:enter()
-  timer = TIMER_CONST
-  if beyblades then
-    local beyblade = beyblades[2]
-    if isServer then
-      beyblade = beyblades[1]
-    end
-    beyblade.body:applyForce(beyblade.launchVec.x, beyblade.launchVec.y)
-    -- Big spin-up
-    -- beyblade.body:applyTorque(500000)
-    -- Optional: give an immediate angular velocity boost (instant spin)
-    beyblade.body:setAngularVelocity(ANGULAR_VEL) -- play with this number for instant "whip"
+  if isServer then
+    beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
+    beyblades[1].body:setAngularVelocity(ANGULAR_VEL) 
+
+    beyblades[2].body:applyForce(beyblades[2].launchVec.x, beyblades[2].launchVec.y)
+    beyblades[2].body:setAngularVelocity(ANGULAR_VEL) 
+  else 
   end
+
 end
 
 function ripped:draw()
   drawDebug()
   drawBlocks()
-  drawBlade()
+
+  drawBlade(1)
+  drawBlade(2)
 
   love.graphics.print("Ripped...", screen.width / 2, 200, 0, 2, 2)
   if loserId then

@@ -48,14 +48,16 @@ function serverSendPosUpdate(dt)
             local vx, vy = ball.body:getLinearVelocity()
             local av = ball.body:getAngularVelocity()
             data = data .. string.format(
-                "ball %d %f %f %f %f %f;",
+                "ball %d %f %f %f %f %f %f;",
                 ball.id,
                 ball.body:getX(),
                 ball.body:getY(),
-                vx, vy, av
+                vx, vy, av,
+                ball.body:getAngle()
             )
         end
         data = data .. string.format("serverTime %f", serverTime)
+        print("Sending data to client: " .. data)
 
         if client then
             udp:sendto(data, client.ip, client.port)
