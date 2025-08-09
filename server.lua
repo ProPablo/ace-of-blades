@@ -1,14 +1,13 @@
 local socket = require("socket")
 local updateRate = 1/ 30 -- 30 fps
 
+client = {}
 function setupServer() 
     udp = socket.udp()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
     udp:settimeout(0) -- Set to non-blocking mode
     print("Server started on port " .. port)
     beyblades = {} -- Initialize the balls table
-    client = nil
-
 end
 
 function acceptClient()
@@ -25,7 +24,8 @@ function acceptClient()
         }
 
         print("Sending ack")
-        udp:sendto("ack", client.id, client.port)
+        udp:sendto("ack", client.ip, client.port)
+        -- socket.sleep(0.01)
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end
