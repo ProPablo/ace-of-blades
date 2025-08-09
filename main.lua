@@ -27,6 +27,7 @@ serverTime = 0
 startCountdownTime = 0
 gamestartTime = 0
 json = require("libs.dkjson.dkjson")
+world = nil
 
 function love.load(args)
     if arg[#arg] == "-debug" then
@@ -50,7 +51,6 @@ function love.load(args)
         height = love.graphics.getHeight()
     }
 
-    world = love.physics.newWorld(0, 0, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
 
     Gamestate.registerEvents()
     Gamestate.switch(lobby)

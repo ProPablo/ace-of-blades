@@ -1,4 +1,3 @@
-
 local ClientRpcCommands = {
   HAS_SELECTED = "selected",
 }
@@ -11,21 +10,19 @@ local ServerRpcCommands = {
 local selection = 0
 
 local function prepBeyblade(newBlade)
-  
   newBlade.health = beybladeMaxHealth
 
   if newBlade.id == 1 then
-  newBlade.direction = 1 -- 1 for clockwise, -1 for counter-clockwise
-  else 
+    newBlade.direction = 1  -- 1 for clockwise, -1 for counter-clockwise
+  else
     newBlade.direction = -1 -- 1 for clockwise, -1 for counter-clockwise
   end
 end
 
 local function prepBladeVisual(newBlade)
-
   if newBlade.id == 1 then
     newBlade.color = serverBladeColor
-  else 
+  else
     newBlade.color = clientBladeColor
   end
 
@@ -55,13 +52,10 @@ local function prepBladeVisual(newBlade)
     newBlade.pentagonShape = love.physics.newPolygonShape(
       pentPoints
     )
-
   end
-
 end
 
 local function prepBladePhyics(newBlade)
-
   -- Based on the chosen shape and params setup the physics of the blade
   newBlade.body = love.physics.newBody(world, originX, originY, "dynamic")
   newBlade.body:setAngularDamping(0.5) -- slows spin over time
@@ -74,7 +68,6 @@ local function prepBladePhyics(newBlade)
     table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.circleShape, 100))
   elseif newBlade.chosenShape == SHAPE.CIRCLE then
     table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.circleShape, 100))
-
   elseif newBlade.chosenShape == SHAPE.PENTAGON then
     table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.pentagonShape, 100))
   end
@@ -92,22 +85,25 @@ local function prepBladePhyics(newBlade)
 
     fixture:setUserData(newBlade)
   end
-  
 end
 
 
 function prep:enter()
+
+  world = love.physics.newWorld(0, 0, true)
   beyblades = {}
-  beyblades[1]= {id = 1}
-  beyblades[2] =  {id = 2}
+  beyblades[1] = { id = 1 }
+  beyblades[2] = { id = 2 }
   prepBeyblade(beyblades[1])
   prepBeyblade(beyblades[2])
   setupBlocks()
+
 end
 
 function prep:draw()
   -- Shape options (only text now)
-  
+  love.graphics.reset()
+
   love.graphics.setColor(1, 1, 1) -- Reset color to white
   local screenWidth = love.graphics.getWidth()
   local selectedName = "None"
@@ -237,7 +233,7 @@ function prep:update(dt)
   if isServer then
     beyblade = beyblades[1]
     acceptRpcServer(dt)
-     if beyblades[1].chosenShape and beyblades[2].chosenShape then
+    if beyblades[1].chosenShape and beyblades[2].chosenShape then
       Gamestate.switch(ready)
     end
   else
@@ -264,7 +260,7 @@ function prep:update(dt)
       serverHasSelected = true
       beyblades[1].chosenShape = selection
       sendSelectionFromServer()
-    else  
+    else
       clientHasSelected = true
       beyblades[2].chosenShape = selection
       sendSelectionFromClient()
@@ -283,5 +279,4 @@ function prep:leave()
 
   prepBladeVisual(beyblades[2])
   prepBladePhyics(beyblades[2])
-
 end

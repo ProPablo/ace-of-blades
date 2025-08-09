@@ -127,7 +127,9 @@ end
 
 
 function ready:enter()
-  -- resetGameState() removing this to keep beyblade state
+  isDragging = false
+  clientHasSetLaunchVec = false
+  serverHasSetLaunchVec = false
 end
 
 function ready:update(dt)
@@ -214,7 +216,7 @@ function ready:draw()
 
   -- Draw drag cursor
   if showCursor then
-      love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
+    love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
   end
 
   love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)

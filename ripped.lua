@@ -115,6 +115,7 @@ end
 
 
 function ripped:enter()
+  loserId = nil
   if isServer then
     beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
 
