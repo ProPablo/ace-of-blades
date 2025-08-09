@@ -39,6 +39,7 @@ function love.load(args)
     require("game")
     readArgs(args)
 
+    -- temp
     if isServer then
         require("server")
         setupServer()
