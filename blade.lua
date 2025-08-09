@@ -1,3 +1,9 @@
+SHAPE = {
+  STICK = 1,
+  SQUARE = 2,
+  PENTAGON = 3,
+}
+
 beyblade = {
   width = 200,
   length = 200,
@@ -10,6 +16,7 @@ beyblade = {
     x = 0,
     y = 0,
   },
+  chosenShape = 0
 }
 
 originX = 325
@@ -32,8 +39,9 @@ function setupBlade(id)
   newBlade.fixture:setFriction(friction)
   return newBlade
 end
-local serverBladeColor = {0.76, 0.18, 0.05} -- Red
-local clientBladeColor = {0.05, 0.18, 0.76} -- Blue
+
+local serverBladeColor = { 0.76, 0.18, 0.05 } -- Red
+local clientBladeColor = { 0.05, 0.18, 0.76 } -- Blue
 
 function drawBlade()
   for _, localblade in pairs(beyblades) do

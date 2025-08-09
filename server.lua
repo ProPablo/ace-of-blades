@@ -3,6 +3,7 @@ local updateRate = 1 / 30 -- 30 fps
 
 client = nil
 function setupServer()
+    love.window.setTitle("Ace of Blades Server")
     udp = socket.udp()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
     udp:settimeout(0)          -- Set to non-blocking mode
