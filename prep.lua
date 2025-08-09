@@ -1,6 +1,6 @@
 shapes = {
     { name = "Stick...",  type = SHAPE.STICK },
-    { name = "Rectangle", type = SHAPE.SQUARE },
+    { name = "Circle", type = SHAPE.CIRCLE },
     { name = "Pentagon",  type = SHAPE.PENTAGON }
   }
 
@@ -10,17 +10,101 @@ local ClientRpcCommands = {
 
 local ServerRpcCommands = {
   STATE_TRANSITION = "stateTransition",
+  HAS_SELECTED = "selected",
 }
 
 local selection = 0
 
-clientHasSelected = false
-serverHasSelected = false
+local function prepBeyblade(newBlade)
+  
+  newBlade.health = beybladeMaxHealth
+
+  if newBlade.id == 1 then
+  newBlade.direction = 1 -- 1 for clockwise, -1 for counter-clockwise
+  else 
+    newBlade.direction = -1 -- 1 for clockwise, -1 for counter-clockwise
+  end
+
+  return newBlade
+end
+
+local function prepBladeVisual(newBlade)
+
+  if newBlade.id == 1 then
+    newBlade.color = serverBladeColor
+  else 
+    newBlade.color = clientBladeColor
+  end
+
+
+  if newBlade.chosenShape == SHAPE.STICK then
+    newBlade.stickShape = love.physics.newRectangleShape(0, circleRad, 20, 100, 0)
+    newBlade.circleShape = love.physics.newCircleShape(circleRad)
+  end
+  if newBlade.chosenShape == SHAPE.CIRCLE then
+    newBlade.circleShape = love.physics.newCircleShape(circleRad)
+  end
+  if newBlade.chosenShape == SHAPE.PENTAGON then
+    -- This is hardcoded with a pentagon circumscribed around a circle of radius 35
+    newBlade.pentagonShape = love.physics.newPolygonShape(
+      0, 17.5,
+      16.64349, 5.40780,
+      10.28624, -14.15780,
+      -10.28624, -14.15780,
+      -16.64349, 5.408
+    )
+    -- TODO test what this actually makes
+    newBlade.length = 70
+
+    newBlade.testShape = love.physics.newPolygonShape(
+      0, -newBlade.length / 2,
+      newBlade.length / 2, -newBlade.length / 4,
+      newBlade.length / 2, newBlade.length / 4,
+      0, newBlade.length / 2,
+      -newBlade.length / 2, newBlade.length / 4
+    )
+  end
+
+end
+
+local function prepBladePhyics(newBlade)
+
+
+  -- Based on the chosen shape and params setup the physics of the blade
+  newBlade.body = love.physics.newBody(world, originX, originY, "dynamic")
+  newBlade.body:setAngularDamping(0.5) -- slows spin over time
+  newBlade.body:setLinearDamping(0.2)  -- slows movement over time
+  newBlade.fixtures = {}
+
+  -- Based on the chosen shape, set the shape of the beyblade
+  if newBlade.chosenShape == SHAPE.STICK then
+    table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.stickShape, 100))
+    table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.circleShape, 100))
+  elseif newBlade.chosenShape == SHAPE.CIRCLE then
+    table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.circleShape, 100))
+
+  elseif newBlade.chosenShape == SHAPE.PENTAGON then
+    table.insert(newBlade.fixtures, love.physics.newFixture(newBlade.body, newBlade.pentagonShape, 100))
+  end
+
+  for index, fixture in ipairs(newBlade.fixtures) do
+    fixture:setRestitution(1)
+    fixture:setDensity(0)
+    fixture:setFriction(friction)
+    
+  end
+
+  return newBlade
+  
+end
+
 
 function prep:enter()
   beyblades = {}
-  beyblades[1] = setupBlade(1) -- Server's beyblade
-  beyblades[2] = setupBlade(2) -- Client's beyblade
+  beyblades[1]= {id = 1}
+  beyblades[2] =  {id = 2}
+  prepBeyblade(beyblades[1])
+  prepBeyblade(beyblades[2])
   setupBlocks()
 end
 
@@ -87,6 +171,15 @@ local function acceptRpcClient(dt)
       Gamestate.switch(ready)
       return
     end
+
+    if message.cmd == ServerRpcCommands.HAS_SELECTED then
+      local selection = message.selection
+
+      print("Received selection from server: " .. selection)
+      beyblades[1].chosenShape = selection
+    else
+      print("Unknown command: " .. message.cmd)
+    end
   elseif err ~= "timeout" then
     print("Error receiving from server: " .. err)
   end
@@ -103,7 +196,6 @@ local function acceptRpcServer(dt)
 
       print("Received selection from client: " .. selection)
       beyblades[2].chosenShape = selection
-      clientHasSelected = true
     else
       print("Unknown command: " .. message.cmd)
     end
@@ -122,6 +214,18 @@ local function sendSelectionFromClient()
   udp:send(jsonData)
 end
 
+local function sendSelectionFromServer()
+  local message = {
+    cmd = ServerRpcCommands.HAS_SELECTED,
+    selection = beyblade.chosenShape,
+  }
+  print(message)
+
+  local jsonData = json.encode(message)
+  udp:sendto(jsonData, client.ip, client.port)
+  print("Sent selection to client: " .. jsonData)
+end
+
 
 local function sendStateTransitionRpcFromServer(dt)
   local message = {
@@ -136,19 +240,22 @@ function prep:update(dt)
   if isServer then
     beyblade = beyblades[1]
     acceptRpcServer(dt)
-     if clientHasSelected and serverHasSelected then
+     if beyblades[1].chosenShape and beyblades[2].chosenShape then
       Gamestate.switch(ready)
     end
   else
     acceptRpcClient(dt)
     beyblade = beyblades[2]
   end
-  if serverHasSelected then return end
+  if isServer and beyblades[1].chosenShape then return end
+  if not isServer and beyblades[2].chosenShape then return end
+
+  -- Handle keyboard input for shape selection if not selected
   if love.keyboard.isDown("1") then
     selection = SHAPE.STICK
   end
   if love.keyboard.isDown("2") then
-    selection = SHAPE.SQUARE
+    selection = SHAPE.CIRCLE
   end
   if love.keyboard.isDown("3") then
     selection = SHAPE.PENTAGON
@@ -159,6 +266,7 @@ function prep:update(dt)
     if isServer then
       serverHasSelected = true
       beyblades[1].chosenShape = selection
+      sendSelectionFromServer()
     else  
       clientHasSelected = true
       beyblades[2].chosenShape = selection
@@ -171,4 +279,12 @@ function prep:leave()
   if isServer then
     sendStateTransitionRpcFromServer()
   end
+
+  prepBladeVisual(beyblades[1])
+  prepBladePhyics(beyblades[1])
+
+
+  prepBladeVisual(beyblades[2])
+  prepBladePhyics(beyblades[2])
+
 end

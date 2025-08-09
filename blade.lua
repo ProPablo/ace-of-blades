@@ -1,6 +1,6 @@
 SHAPE = {
   STICK = 1,
-  SQUARE = 2,
+  CIRCLE = 2,
   PENTAGON = 3,
 }
 
@@ -22,55 +22,32 @@ beybladeMaxHealth = 100
 originX = 325
 originY = 325
 
-local friction = 0.0
+friction = 0.0
 circleRad = 35
 
-function setupBlade(id)
-  local newBlade = {}
-  newBlade.id = id
-  -- beyblade.asset = love.graphics.newImage("bey.png")
-  newBlade.body = love.physics.newBody(world, originX, originY, "dynamic")
-  newBlade.shape = love.physics.newCircleShape(circleRad)
-  newBlade.fixture = love.physics.newFixture(newBlade.body, newBlade.shape, 100)
-  newBlade.fixture:setRestitution(1)
-  newBlade.fixture:setDensity(0)
-  newBlade.body:setAngularDamping(0.5) -- slows spin over time
-  newBlade.body:setLinearDamping(0.2)  -- slows movement over time
-  newBlade.fixture:setFriction(friction)
 
-  newBlade.health = beybladeMaxHealth
-  newBlade.direction = 1 -- 1 for clockwise, -1 for counter-clockwise
-  return newBlade
-end
 
-local serverBladeColor = { 0.76, 0.18, 0.05 } -- Red
-local clientBladeColor = { 0.05, 0.18, 0.76 } -- Blue
+serverBladeColor = { 0.76, 0.18, 0.05 } -- Red
+clientBladeColor = { 0.05, 0.18, 0.76 } -- Blue
 
 function drawBlade(id)
   local localblade = beyblades[id]
-  
+  love.graphics.print("selection " .. localblade.chosenShape, screen.width / 2, 300, 0, 2, 2)
+
   local x = localblade.body:getX()
   local y = localblade.body:getY()
   local angle = localblade.body:getAngle()
 
 
-    -- Show angular velocity above each beyblade
-    local av = localblade.body:getAngularVelocity()
-    local lv = localblade.body:getLinearVelocity()
-    love.graphics.setColor(1, 1, 1)
+  -- Show angular velocity above each beyblade
+  local av = localblade.body:getAngularVelocity()
+  local lv = localblade.body:getLinearVelocity()
+  love.graphics.setColor(1, 1, 1)
 
-    love.graphics.print(string.format("Spin: %.2f", localblade.health), localblade.body:getX() - 20,
-      localblade.body:getY() - circleRad - 20)
-    love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
-      localblade.body:getY() - circleRad - 30)
-
-  if localblade.id == 1 then
-    love.graphics.setColor(serverBladeColor)
-  else
-    love.graphics.setColor(clientBladeColor)
-  end
-
-  love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
+  love.graphics.print(string.format("Spin: %.2f", localblade.health), localblade.body:getX() - 20,
+    localblade.body:getY() - circleRad - 20)
+  love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
+    localblade.body:getY() - circleRad - 30)
 
   -- localised spiral parameters (slightly protruding from beyblade)
   local mode = 1             -- Archimedes spiral
@@ -80,10 +57,23 @@ function drawBlade(id)
   local angularStep = 0.15
   local K = maxRadius / (dep * angularStep) -- scale so spiral ends just beyond blade
 
+
+  love.graphics.setColor(localblade.color)
+  if localblade.chosenShape == SHAPE.STICK then
+    love.graphics.polygon("fill", localblade.body:getWorldPoints(localblade.stickShape:getPoints()))
+    love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
+  elseif localblade.chosenShape == SHAPE.CIRCLE then
+    love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
+  elseif localblade.chosenShape == SHAPE.PENTAGON then
+    love.graphics.polygon("fill", localblade.body:getWorldPoints(localblade.pentagonShape:getPoints()))
+  end
+
   -- store drawing state
   -- love.graphics.push()
   love.graphics.translate(x, y)
   love.graphics.rotate(angle)
+
+
 
   -- reset local spiral state
   local A = 0
@@ -109,8 +99,6 @@ function drawBlade(id)
 
     lx, ly = xpos, ypos
     A = A + angularStep
-
-
   end
 
   love.graphics.reset() -- Reset color to white

@@ -51,10 +51,8 @@ function love.load(args)
     }
 
     world = love.physics.newWorld(0, 0, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
-    world:setCallbacks(beginContact)
 
     Gamestate.registerEvents()
-
     Gamestate.switch(lobby)
 end
 
