@@ -4,26 +4,29 @@ function drawGameState(ripped)
   local setMsg = hasSet and "SET" or "READYING..."
   if ripped then setMsg = "RIPPED" end
   love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
+  if loserId then
+    love.graphics.print(string.format("Loser: %.2f", loserId), screen.width/2, 220,0,2,2)
+  end
 end
 
 function bladeHitWall(localblade)
-  local currentAngularVelocity = localblade:getAngularVelocity()
-  local reductionFactor = 0.99 -- for wall
-  local newAngularVelocity = currentAngularVelocity * reductionFactor
-  if (math.abs(newAngularVelocity) < MIN_ANGV) then
-    newAngularVelocity = 0
-  else
-    localblade:setAngularVelocity(newAngularVelocity)
-  end
+  -- local currentAngularVelocity = localblade:getAngularVelocity()
+  -- local reductionFactor = 0.99 -- for wall
+  -- local newAngularVelocity = currentAngularVelocity * reductionFactor
+  -- if (math.abs(newAngularVelocity) < MIN_ANGV) then
+  --   newAngularVelocity = 0
+  -- else
+  --   localblade:setAngularVelocity(newAngularVelocity)
+  -- end
 end
 
 function transferSpin(fromBody, toBody)
   local fromAngularVelocity = fromBody:getAngularVelocity()
-  local minBoost = 10           -- minimum spin boost to give on collision
+  local minBoost = 10 -- minimum spin boost to give on collision
 
   -- Calculate lost spin
-  local lostSpin = fromAngularVelocity * 0.3  -- xfer percent
-  local newFromAngularVelocity = fromAV * 0.7
+  local lostSpin = fromAngularVelocity * 0.3 -- xfer percent
+  local newFromAngularVelocity = fromAngularVelocity * 0.7
 
   if math.abs(newFromAngularVelocity) < MIN_ANGV then
     newFromAngularVelocity = 0

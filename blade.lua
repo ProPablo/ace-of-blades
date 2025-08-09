@@ -15,7 +15,7 @@ beyblade = {
 originX = 325
 originY = 325
 
-local friction = 0.01
+local friction = 0.0
 local circleRad = 35
 
 function setupBlade(id)
@@ -27,7 +27,8 @@ function setupBlade(id)
   newBlade.fixture = love.physics.newFixture(newBlade.body, newBlade.shape, 100)
   newBlade.fixture:setRestitution(1)
   newBlade.fixture:setDensity(0)
-  newBlade.body:setLinearDamping(0.05)
+  newBlade.body:setAngularDamping(0.5) -- slows spin over time
+  newBlade.body:setLinearDamping(0.2)  -- slows movement over time
   newBlade.fixture:setFriction(friction)
   return newBlade
 end
@@ -45,9 +46,8 @@ function drawBlade()
     local protrudeFactor = 1.3 -- 1.0 = inside, >1.0 = slight protrusion
     local maxRadius = circleRad * protrudeFactor
     local dep = 80
-    local angularStep = 0.2
+    local angularStep = 0.15
     local K = maxRadius / (dep * angularStep) -- scale so spiral ends just beyond blade
-
 
     -- store drawing state
     love.graphics.push()
@@ -85,13 +85,15 @@ function drawBlade()
 
 
     -- Show angular velocity above each beyblade
-    local lv = localblade.body:getAngularVelocity()
-    local av = localblade.body:getLinearVelocity()
+    local av = localblade.body:getAngularVelocity()
+    local lv = localblade.body:getLinearVelocity()
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(string.format("Spin: %.2f", av), localblade.body:getX() - 20,
-    localblade.body:getY() - circleRad - 20)
-    love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
-    localblade.body:getY() - circleRad - 30)
+    if debugMode then
+      love.graphics.print(string.format("Spin: %.2f", av), localblade.body:getX() - 20,
+        localblade.body:getY() - circleRad - 20)
+      love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
+        localblade.body:getY() - circleRad - 30)
+    end
   end
   if not isDragging and not hasSet then
     love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)

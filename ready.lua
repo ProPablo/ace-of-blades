@@ -9,7 +9,7 @@ function resetGameState()
   timer = TIMER_CONST
 
   for _, blade in ipairs(beyblades) do
-    blade.body:destroy()     -- optional in LÖVE 12.0+, else just nil it
+    blade.body:destroy() -- optional in LÖVE 12.0+, else just nil it
   end
   beyblades = {}
   beyblades[1] = setupBlade(1) -- Server's beyblade
@@ -64,6 +64,10 @@ function ready:update(dt)
   if (not love.mouse.isDown(1) and isDragging == true) then
     endDragX = cursorX
     endDragY = cursorY
+    if endDragX == startDragX and endDragY == startDragY then
+      isDragging = false
+      return
+    end
     local dx = endDragX - startDragX
     local dy = endDragY - startDragY
     local length = math.sqrt(dx * dx + dy * dy)
@@ -77,11 +81,11 @@ function ready:update(dt)
       local fy = -dirY * length * forceMod
       beyblade.vec = { x = fx, y = fy }
       -- beyblade.body:applyForce(fx, fy)
+      hasSet = true
+      isDragging = false
     else
       print(length)
     end
-    hasSet = true
-    isDragging = false
   end
 end
 
@@ -101,10 +105,6 @@ function drawRip()
   end
 
   if sx and sy and mx and my then
-    -- Draw drag line (start to mouse)
-    love.graphics.setColor(0, 0.4, 0) -- dark green
-    love.graphics.line(sx, sy, mx, my)
-
     -- Calculate mirror point
     local dx = mx - sx
     local dy = my - sy

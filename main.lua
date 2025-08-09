@@ -3,6 +3,7 @@
 lobby = {}
 ready = {}
 ripped = {}
+loserId = nil
 
 isServer = false
 port = 12345
