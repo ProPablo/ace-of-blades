@@ -1,11 +1,11 @@
 local socket = require("socket")
-local updateRate = 1/ 30 -- 30 fps
+local updateRate = 1 / 30 -- 30 fps
 
 client = nil
-function setupServer() 
+function setupServer()
     udp = socket.udp()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
-    udp:settimeout(0) -- Set to non-blocking mode
+    udp:settimeout(0)          -- Set to non-blocking mode
     print("Server started on port " .. port)
 end
 
@@ -30,17 +30,25 @@ function acceptClient()
 end
 
 local t = 0
-local serverTime = love.timer.getTime( )
+local serverTime = love.timer.getTime()
 function rippedSendServerUpdate(dt)
     serverTime = love.timer.getTime()
-    t = t + dt 
-	
-	if t > updateRate then
+    t = t + dt
+
+    if t > updateRate then
         t = t - updateRate
 
         local data = ""
         for _, ball in ipairs(beyblades) do
-            data = data .. string.format("ball %d %f %f;", ball.id, ball.body:getX(), ball.body:getY())
+            local vx, vy = ball.body:getLinearVelocity()
+            local av = ball.body:getAngularVelocity()
+            data = data .. string.format(
+                "ball %d %f %f %f %f %f;",
+                ball.id,
+                ball.body:getX(),
+                ball.body:getY(),
+                vx, vy, av
+            )
         end
         data = data .. string.format("serverTime %f", serverTime)
 
@@ -50,4 +58,3 @@ function rippedSendServerUpdate(dt)
         end
     end
 end
-

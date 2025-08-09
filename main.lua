@@ -17,7 +17,7 @@ endDragY = 0
 forceMod = 100000
 
 beyblades = {}
-debugMode = true
+debugMode = false
 
 function love.load(args)
     if arg[#arg] == "-debug" then
@@ -68,7 +68,9 @@ function lobby:enter()
         setupServer()
     else
         require("client")
+        love.timer.sleep(0.1) 
         setupClient()
+        setToSecondMonitor() 
     end
 end
 
