@@ -5,31 +5,30 @@ function setupClient()
     udp = socket.udp()
     udp:settimeout(5) -- Block for up to 5 seconds
     local success, err = udp:setpeername(serverAddress, port)
-    if not success then
+     if not success then
         error("Error connecting to server: " .. err)
-        return
-    end
-    -- Send join request
+        return 
+     end
+     -- Send join request
     local success, err = udp:send("join")
     if not success then
-        error("Failed to send join request:", err)
-
+        print("Failed to send join request:", err)
+        love.event.quit()
         return
     end
-    -- sleep here to wait for server response
-
-    -- love.timer.sleep(1) -- Wait for server to respond
+    
     print("Waiting for server...")
-
-    data, err = udp:receive()
-    if data == "ack" then
+    
+    -- Wait for ack
+    local response = udp:receive()
+    if response == "ack" then
         connected = true
-        udp:settimeout(0)     -- Set to non-blocking
+        udp:settimeout(0) -- Set to non-blocking
         print("Connected to server!")
     else
-        error("No server response" .. (err or ""))
+        print("No server response")
+        love.event.quit()
     end
-
 
     beyblades = {} -- Initialize the balls table
 end

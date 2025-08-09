@@ -30,4 +30,5 @@ function drawDebug()
     love.graphics.print(startDragY, 150, 400)
     love.graphics.print(endDragX, 100, 500)
     love.graphics.print(endDragY, 150, 500)
+    love.graphics.print( timer, 100,100)
 end

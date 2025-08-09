@@ -1,7 +1,7 @@
 local socket = require("socket")
 local updateRate = 1/ 30 -- 30 fps
 
-client = {}
+client = nil
 function setupServer() 
     udp = socket.udp()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
