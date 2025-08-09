@@ -146,11 +146,27 @@ function checkLoseCondition()
   end
 end
 
+local CHASE_FORCE = 5000 -- tweak for strength
+
+local function moveTowardsOpponentInstant(b1, b2)
+    local dx = b2.body:getX() - b1.body:getX()
+    local dy = b2.body:getY() - b1.body:getY()
+    local dist = math.sqrt(dx*dx + dy*dy)
+    if dist > 0 then
+        local fx = (dx / dist) * CHASE_FORCE
+        local fy = (dy / dist) * CHASE_FORCE
+        b1.body:applyLinearImpulse(fx, fy)
+    end
+end
+
 function ripped:update(dt)
   world:update(dt)
   if isServer then
     updateBeyblade(dt, 1)
     updateBeyblade(dt, 2)
+
+    moveTowardsOpponentInstant(beyblades[1], beyblades[2])
+    moveTowardsOpponentInstant(beyblades[2], beyblades[1])
 
     checkLoseCondition()
 
