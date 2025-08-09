@@ -4,19 +4,19 @@ SHAPE = {
   PENTAGON = 3,
 }
 
-beyblade = {
-  width = 200,
-  length = 200,
-  asset,
-  body,    -- component that holds information about the body (vel, pos, accel etc.)
-  shape,   -- collision (one shape many fixtures, )
-  fixture, -- size, scallable, drag (one body many fixtures)
-  launchVec = {
-    x = 0,
-    y = 0,
-  },
-  chosenShape = 0
-}
+-- beyblade = {
+--   width = 200,
+--   length = 200,
+--   asset,
+--   body,    -- component that holds information about the body (vel, pos, accel etc.)
+--   shape,   -- collision (one shape many fixtures, )
+--   fixture, -- size, scallable, drag (one body many fixtures)
+--   launchVec = {
+--     x = 0,
+--     y = 0,
+--   },
+--   chosenShape = 0
+-- }
 beybladeMaxHealth = 100
 
 originX = 325
