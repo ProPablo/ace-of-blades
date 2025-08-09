@@ -1,5 +1,5 @@
 ServerRpcCommands = {
-  STATE_TRANSITION = "stateTransition",
+    STATE_TRANSITION = "stateTransition",
 }
 local socket = require("socket")
 updateRate = 1 / 30 -- 30 fps
@@ -28,7 +28,13 @@ function acceptClient()
         }
 
         udp:sendto("ack", client.ip, client.port)
-        Gamestate.switch(prep)
+
+
+        if debugMode then
+            Gamestate.switch(ready)
+        else
+            Gamestate.switch(prep)
+        end
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end

@@ -26,7 +26,7 @@ debugMode = false
 serverTime = 0
 startCountdownTime = 0
 gamestartTime = 0
-json = require ("libs.dkjson.dkjson")
+json = require("libs.dkjson.dkjson")
 
 function love.load(args)
     if arg[#arg] == "-debug" then
@@ -40,8 +40,9 @@ function love.load(args)
     require("countdown")
     require("ripped")
     require("game")
+    require("gameover")
     readArgs(args)
-    
+
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
     screen = {
@@ -54,20 +55,7 @@ function love.load(args)
 
     Gamestate.registerEvents()
 
-
-    if debugMode then
-        if isServer then
-            require("server")
-            setupServer()
-        else
-            require("client")
-            setupClient()
-        end
-        -- Gamestate.switch(ready)
-        Gamestate.switch(prep)
-    else
-        Gamestate.switch(lobby)
-    end
+    Gamestate.switch(lobby)
 end
 
 function lobby:enter()
@@ -80,9 +68,9 @@ function lobby:enter()
         setupServer()
     else
         require("client")
-        love.timer.sleep(0.1) 
+        love.timer.sleep(0.1)
         setupClient()
-        setToSecondMonitor() 
+        setToSecondMonitor()
     end
 end
 

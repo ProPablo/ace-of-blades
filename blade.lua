@@ -11,13 +11,13 @@ beyblade = {
   body,    -- component that holds information about the body (vel, pos, accel etc.)
   shape,   -- collision (one shape many fixtures, )
   fixture, -- size, scallable, drag (one body many fixtures)
-  spin = 20,
   launchVec = {
     x = 0,
     y = 0,
   },
   chosenShape = 0
 }
+beybladeMaxHealth = 100
 
 originX = 325
 originY = 325
@@ -38,6 +38,8 @@ function setupBlade(id)
   newBlade.body:setLinearDamping(0.2)  -- slows movement over time
   newBlade.fixture:setFriction(friction)
 
+  newBlade.health = beybladeMaxHealth
+  newBlade.direction = 1 -- 1 for clockwise, -1 for counter-clockwise
   return newBlade
 end
 
@@ -51,6 +53,17 @@ function drawBlade(id)
   local x = localblade.body:getX()
   local y = localblade.body:getY()
   local angle = localblade.body:getAngle()
+
+
+    -- Show angular velocity above each beyblade
+    local av = localblade.body:getAngularVelocity()
+    local lv = localblade.body:getLinearVelocity()
+    love.graphics.setColor(1, 1, 1)
+
+    love.graphics.print(string.format("Spin: %.2f", localblade.health), localblade.body:getX() - 20,
+      localblade.body:getY() - circleRad - 20)
+    love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
+      localblade.body:getY() - circleRad - 30)
 
   if localblade.id == 1 then
     love.graphics.setColor(serverBladeColor)
@@ -99,16 +112,6 @@ function drawBlade(id)
     A = A + angularStep
 
 
-    -- Show angular velocity above each beyblade
-    local av = localblade.body:getAngularVelocity()
-    local lv = localblade.body:getLinearVelocity()
-    love.graphics.setColor(1, 1, 1)
-    if debugMode then
-      love.graphics.print(string.format("Spin: %.2f", av), localblade.body:getX() - 20,
-        localblade.body:getY() - circleRad - 20)
-      love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
-        localblade.body:getY() - circleRad - 30)
-    end
   end
 
   love.graphics.reset() -- Reset color to white
