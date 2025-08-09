@@ -1,8 +1,3 @@
-shapes = {
-    { name = "Stick...",  type = SHAPE.STICK },
-    { name = "Circle", type = SHAPE.CIRCLE },
-    { name = "Pentagon",  type = SHAPE.PENTAGON }
-  }
 
 local ClientRpcCommands = {
   HAS_SELECTED = "selected",
@@ -44,29 +39,28 @@ local function prepBladeVisual(newBlade)
   end
   if newBlade.chosenShape == SHAPE.PENTAGON then
     -- This is hardcoded with a pentagon circumscribed around a circle of radius 35
-    newBlade.pentagonShape = love.physics.newPolygonShape(
+
+    local pentPoints = {
       0, 17.5,
       16.64349, 5.40780,
       10.28624, -14.15780,
       -10.28624, -14.15780,
       -16.64349, 5.408
-    )
-    -- TODO test what this actually makes
-    newBlade.length = 70
+    }
+    pentScale = 2.0 -- scale factor to adjust size
+    for i = 1, #pentPoints do
+      pentPoints[i] = pentPoints[i] * pentScale
+    end
 
-    newBlade.testShape = love.physics.newPolygonShape(
-      0, -newBlade.length / 2,
-      newBlade.length / 2, -newBlade.length / 4,
-      newBlade.length / 2, newBlade.length / 4,
-      0, newBlade.length / 2,
-      -newBlade.length / 2, newBlade.length / 4
+    newBlade.pentagonShape = love.physics.newPolygonShape(
+      pentPoints
     )
+
   end
 
 end
 
 local function prepBladePhyics(newBlade)
-
 
   -- Based on the chosen shape and params setup the physics of the blade
   newBlade.body = love.physics.newBody(world, originX, originY, "dynamic")
@@ -89,10 +83,15 @@ local function prepBladePhyics(newBlade)
     fixture:setRestitution(1)
     fixture:setDensity(0)
     fixture:setFriction(friction)
-    
-  end
+    -- if newBlade.id == 1 then
+    --   fixture:setCategory(PHYSICS_CATEGORIES.SERVER_BEYBLADE)
+    -- else
+    --   fixture:setCategory(PHYSICS_CATEGORIES.CLIENT_BEYBLADE)
+    -- end
+    fixture:setCategory(PHYSICS_CATEGORIES.BEYBLADE)
 
-  return newBlade
+    fixture:setUserData(newBlade)
+  end
   
 end
 
@@ -112,7 +111,7 @@ function prep:draw()
   love.graphics.setColor(1, 1, 1) -- Reset color to white
   local screenWidth = love.graphics.getWidth()
   local selectedName = "None"
-  for _, shape in ipairs(shapes) do
+  for _, shape in ipairs(shapesInfo) do
     if shape.type == selection then
       selectedName = shape.name
       break
@@ -138,12 +137,12 @@ function prep:draw()
   end
 
 
-  local totalShapes = #shapes
+  local totalShapes = #shapesInfo
   local spacing = screenWidth / (totalShapes + 1)
   local textY = 100
 
   for i = 1, totalShapes do
-    local shape = shapes[i]
+    local shape = shapesInfo[i]
     local centerX = spacing * i
 
     -- Determine selection color

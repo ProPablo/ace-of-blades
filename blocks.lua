@@ -29,11 +29,10 @@ function setupBlocks()
   blocks.block4.shape = love.physics.newRectangleShape(0, 0, blocksWidth, screen.height)
   blocks.block4.fixture = love.physics.newFixture(blocks.block4.body, blocks.block4.shape, 5)
 
-  -- Friction
-  blocks.block1.fixture:setFriction(friction)
-  blocks.block2.fixture:setFriction(friction)
-  blocks.block3.fixture:setFriction(friction)
-  blocks.block4.fixture:setFriction(friction)
+  for _, block in pairs(blocks) do
+    block.fixture:setCategory(PHYSICS_CATEGORIES.WALL)
+    block.fixture:setFriction(friction)
+  end
   
 end
 

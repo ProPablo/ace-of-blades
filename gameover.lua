@@ -3,6 +3,13 @@ gameover = {}
 
 function gameover:enter()
     -- Determine winner based on loserId
+
+    if isServer then 
+        beyblade = beyblades[1]
+    else
+        beyblade = beyblades[2]
+    end
+
     if loserId == 1 then
         winnerText = isServer and "YOU LOST!" or "YOU WON!"
         winnerColor = isServer and { 0.8, 0.2, 0.2 } or { 0.2, 0.8, 0.2 }
@@ -26,6 +33,15 @@ function gameover:draw()
     love.graphics.setFont(font)
     local textWidth = font:getWidth(winnerText)
     love.graphics.print(winnerText, (screen.width - textWidth) / 2, screen.height / 2 - 50)
+
+    -- Draw information about about what shape
+    love.graphics.setColor(1, 1, 1)
+    local infoText = "You were using: " .. (shapeType2String( beyblade.chosenShape))
+
+    local infoFont = love.graphics.newFont(24)
+    love.graphics.setFont(infoFont)
+    local infoWidth = infoFont:getWidth(infoText)
+    love.graphics.print(infoText, (screen.width - infoWidth) / 2, screen.height / 2 + 20)
     
     -- Draw sparkly border effect
     love.graphics.setColor(1, 1, 1, 0.3 + 0.2 * math.sin(love.timer.getTime() * 3))
