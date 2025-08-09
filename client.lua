@@ -1,20 +1,35 @@
 local socket = require("socket")
+serverAddress = "localhost"
 
 function setupClient()
     udp = socket.udp()
-    udp:settimeout(0) -- Non-blocking mode
-
-    -- Connect to the server
-    local success, err = udp:setpeername("localhost", port)
-    if not success then
+    udp:settimeout(5) -- Block for up to 5 seconds
+    local success, err = udp:setpeername(serverAddress, port)
+     if not success then
         error("Error connecting to server: " .. err)
+        return 
+     end
+     -- Send join request
+    local success, err = udp:send("join")
+    if not success then
+        print("Failed to send join request:", err)
+        love.event.quit()
+        return
+    end
+    
+    print("Waiting for server...")
+    
+    -- Wait for ack
+    local response = udp:receive()
+    if response == "ack" then
+        connected = true
+        udp:settimeout(0) -- Set to non-blocking
+        print("Connected to server!")
     else
-        print("Connected to server on port " .. port)
-        -- send initial message to server
-        udp:send("Hello from client")
+        print("No server response")
+        love.event.quit()
     end
 
-    -- Initialize client state
     beyblades = {} -- Initialize the balls table
 end
 
@@ -34,6 +49,6 @@ function receiveClientUpdates()
             beyblades[id].body:setPosition(x, y)
         end
     elseif err ~= "timeout" then
-        error("Error receiving from server: " .. err)
+        print("Error receiving from server: " .. err)
     end
 end

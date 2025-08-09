@@ -3,7 +3,7 @@
 game = {}
 lobby = {}
 
-isServer = true
+isServer = false
 port = 12345
 
 
@@ -43,6 +43,18 @@ function love.load(args)
         height = love.graphics.getHeight()
     }
 
+
+    world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
+
+    Gamestate.registerEvents()
+    Gamestate.switch(lobby)
+end
+
+function lobby:enter()
+    -- Initialize menu state
+    love.graphics.setBackgroundColor(0.2, 0.2, 0.2) -- Set background color
+    love.graphics.setFont(love.graphics.newFont(20)) -- Set font size
+
     if isServer then
         require("server")
         setupServer()
@@ -51,10 +63,20 @@ function love.load(args)
         setupClient()
     end
 
-    world = love.physics.newWorld(0, 1, true)
 
-    Gamestate.registerEvents()
-    Gamestate.switch(game)
+end
+
+function lobby:draw()
+    love.graphics.setColor(1, 1, 1) -- Set color to white
+    love.graphics.print("Welcome to the Beyblade Game!" .. (isServer and " (Server Mode)" or " (Client Mode)"), 100, 150)
+end
+
+function lobby:update(dt)
+    if isServer then 
+        acceptClient()
+    else
+    end
+    
 end
 
 function game:enter()
@@ -75,7 +97,6 @@ end
 function game:update(dt)
     if isServer then
         beyblade = beyblades[1]
-        acceptClient()
         sendServerUpdate(dt)
     else
         receiveClientUpdates()
