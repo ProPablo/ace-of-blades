@@ -24,7 +24,10 @@ isDragging = false
 hasRipped = false
 hasSet = false
 
-timer = 5
+TIMER_CONST = 2
+timer = TIMER_CONST
+
+beyblades = {}
 
 function love.load(args)
     if arg[#arg] == "-debug" then
@@ -36,25 +39,6 @@ function love.load(args)
     require("game")
     readArgs(args)
 
-    Gamestate = require("libs/hump/gamestate")
-    vector = require "libs.hump.vector"
-    screen = {
-        width = love.graphics.getWidth(),
-        height = love.graphics.getHeight()
-    }
-
-
-    world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
-
-    Gamestate.registerEvents()
-    Gamestate.switch(lobby)
-end
-
-function lobby:enter()
-    -- Initialize menu state
-    love.graphics.setBackgroundColor(0.2, 0.2, 0.2) -- Set background color
-    love.graphics.setFont(love.graphics.newFont(20)) -- Set font size
-
     if isServer then
         require("server")
         setupServer()
@@ -63,7 +47,34 @@ function lobby:enter()
         setupClient()
     end
 
+    Gamestate = require("libs/hump/gamestate")
+    vector = require "libs.hump.vector"
+    screen = {
+        width = love.graphics.getWidth(),
+        height = love.graphics.getHeight()
+    }
 
+    
+    world = love.physics.newWorld(0, 1, true) -- create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
+    world:setCallbacks(beginContact)
+    
+    Gamestate.registerEvents()
+    -- Gamestate.switch(lobby)
+    Gamestate.switch(game)
+end
+
+function lobby:enter()
+    -- Initialize menu state
+    love.graphics.setBackgroundColor(0.2, 0.2, 0.2)  -- Set background color
+    love.graphics.setFont(love.graphics.newFont(20)) -- Set font size
+
+    -- if isServer then
+    --     require("server")
+    --     setupServer()
+    -- else
+    --     require("client")
+    --     setupClient()
+    -- end
 end
 
 function lobby:draw()
@@ -72,11 +83,10 @@ function lobby:draw()
 end
 
 function lobby:update(dt)
-    if isServer then 
+    if isServer then
         acceptClient()
     else
     end
-    
 end
 
 function game:enter()
@@ -92,6 +102,15 @@ function game:draw()
     drawBlade()
     drawRip()
     drawGameState()
+end
+
+function ripIt(beyblade)
+    beyblade.body:applyForce(beyblade.vec.x, beyblade.vec.y)
+    -- Big spin-up
+    beyblade.body:applyTorque(500000)
+    -- Optional: give an immediate angular velocity boost (instant spin)
+    beyblade.body:setAngularVelocity(30)     -- play with this number for instant "whip"
+    hasRipped = true
 end
 
 function game:update(dt)
@@ -115,17 +134,14 @@ function game:update(dt)
 
     if (hasSet) then
         timer = timer - dt
-        if (timer <= 0) then hasRipped = true end
+        if (timer <= 0) then
+            timer = 0
+            ripIt(beyblade)
+        end
     end
 
     if (love.keyboard.isDown("space") and hasSet) then
-        beyblade.body:applyForce(beyblade.vec.x, beyblade.vec.y)
-        -- Big spin-up
-        beyblade.body:applyTorque(500000) -- crank this up significantly
-
-        -- Optional: give an immediate angular velocity boost (instant spin)
-        beyblade.body:setAngularVelocity(30) -- play with this number for instant "whip"
-        hasRipped = true
+        ripIt(beyblade)
     end
 
     if (hasSet) then return end
