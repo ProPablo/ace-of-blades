@@ -31,3 +31,6 @@ function drawDebug()
     love.graphics.print(val, 100, 200)
     love.graphics.print(timer, 100, 100)
 end
+
+
+function lerp(a, b, t) return a + (b - a) * t end

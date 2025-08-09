@@ -20,6 +20,8 @@ forceMod = 100000
 beyblades = {}
 debugMode = false
 
+currentTime = 0
+
 function love.load(args)
     if arg[#arg] == "-debug" then
         require("mobdebug").start()
