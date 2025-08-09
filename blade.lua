@@ -41,7 +41,7 @@ function drawBlade()
     love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
 
     -- localised spiral parameters (slightly protruding from beyblade)
-    local mode = 1              -- Archimedes spiral
+    local mode = 1             -- Archimedes spiral
     local protrudeFactor = 1.3 -- 1.0 = inside, >1.0 = slight protrusion
     local maxRadius = circleRad * protrudeFactor
     local dep = 80
@@ -85,51 +85,16 @@ function drawBlade()
 
 
     -- Show angular velocity above each beyblade
-    local av = localblade.body:getAngularVelocity()
+    local lv = localblade.body:getAngularVelocity()
+    local av = localblade.body:getLinearVelocity()
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(string.format("Spin: %.2f", av), localblade.body:getX() - 20,
-      localblade.body:getY() - circleRad - 20)
+    localblade.body:getY() - circleRad - 20)
+    love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
+    localblade.body:getY() - circleRad - 30)
   end
-  if not isDragging and not hasRipped then
+  if not isDragging and not hasSet then
     love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
   end
   love.graphics.reset() -- Reset color to white
-end
-
-function drawRip()
-  local sx, sy, mx, my, mirrorX, mirrorY
-  if isDragging then
-    sx, sy = beyblade.body:getX(), beyblade.body:getY()
-    mx, my = love.mouse.getX(), love.mouse.getY()
-  end
-
-  if sx and sy and mx and my then
-    -- Draw drag line (start to mouse)
-    love.graphics.setColor(0, 0.4, 0) -- dark green
-    love.graphics.line(sx, sy, mx, my)
-
-    -- Calculate mirror point
-    local dx = mx - sx
-    local dy = my - sy
-    mirrorX = sx - dx
-    mirrorY = sy - dy
-
-    -- Draw force direction arrow (start to mirror)
-    love.graphics.setColor(0, 1, 0) -- bright green
-    love.graphics.line(sx, sy, mirrorX, mirrorY)
-
-    -- Draw arrowhead at mirror point
-    local arrowLength = 20
-    local arrowAngle = math.rad(30)
-    local dir = vector(sx - mirrorX, sy - mirrorY):normalized() -- direction from mirror to start
-
-    local left = dir:rotated(arrowAngle) * arrowLength
-    local right = dir:rotated(-arrowAngle) * arrowLength
-
-    love.graphics.line(mirrorX, mirrorY, mirrorX + left.x, mirrorY + left.y)
-    love.graphics.line(mirrorX, mirrorY, mirrorX + right.x, mirrorY + right.y)
-  end
-
-
-  love.graphics.setColor(1, 1, 1)
 end
