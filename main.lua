@@ -1,6 +1,7 @@
 -- Run this to hot reload
 -- nodemon --exec "love ." --ext lua --ignore node_modules
 lobby = {}
+prep = {}
 ready = {}
 ripped = {}
 loserId = nil
@@ -29,6 +30,7 @@ function love.load(args)
     require("util")
     require("blade")
     require("blocks")
+    require("prep")
     require("ready")
     require("game")
     require("ripped")
@@ -55,7 +57,8 @@ function love.load(args)
             require("client")
             setupClient()
         end
-        Gamestate.switch(ready)
+        -- Gamestate.switch(ready)
+        Gamestate.switch(prep)
     else
         Gamestate.switch(lobby)
     end
@@ -65,7 +68,7 @@ function lobby:enter()
     -- Initialize menu state
     love.graphics.setBackgroundColor(0.2, 0.2, 0.2)  -- Set background color
     love.graphics.setFont(love.graphics.newFont(20)) -- Set font size
-
+    love.window.setTitle("Ace of Blades")
     if isServer then
         require("server")
         setupServer()
@@ -83,6 +86,7 @@ function lobby:draw()
 end
 
 function lobby:update(dt)
+    currentTime = currentTime + dt
     if isServer then
         acceptClient()
     else

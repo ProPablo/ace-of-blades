@@ -1,10 +1,13 @@
 function setToSecondMonitor()
     local targetMonitor = 1 -- Change this to the desired monitor number
+    
     local desktopWidth, desktopHeight = love.window.getDesktopDimensions(targetMonitor)
     print("Setting window to second monitor with dimensions: " .. desktopWidth .. "x" .. desktopHeight)
 
     love.window.setMode(800, 600, {
-        x = desktopWidth + 30,
+        -- TEMP 
+        -- x = desktopWidth + 30
+        x = -1000 + 30,
         y = 30,
         resizable = true
     })
