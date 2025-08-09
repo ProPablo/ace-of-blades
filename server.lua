@@ -1,5 +1,5 @@
 local socket = require("socket")
-local updateRate = 1000/ 30 -- 30 fps
+local updateRate = 1/ 30 -- 30 fps
 
 function setupServer() 
     udp = socket.udp()
@@ -7,7 +7,6 @@ function setupServer()
     udp:settimeout(0) -- Set to non-blocking mode
     print("Server started on port " .. port)
     beyblades = {} -- Initialize the balls table
-    -- clients = {} -- Initialize the clients table
     client = nil
 
 end
@@ -17,7 +16,6 @@ function acceptClient()
     local data, msg_or_ip, port = udp:receivefrom()
     if data then
         print("New client connected: " .. msg_or_ip .. ":" .. port .. " - " .. data)
-        -- id = #clients + 1 -- Assign a new ID to the client
         id = 2
         client = {
             id = id,
@@ -25,7 +23,7 @@ function acceptClient()
             port = port,
             lastActive = love.timer.getTime()
         }
-        -- table.insert(clients, client)
+        udp:sendto("ack", client.id, client.port)
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end
@@ -38,6 +36,8 @@ function sendServerUpdate(dt)
     t = t + dt 
 	
 	if t > updateRate then
+        t = t - updateRate
+
         local data = ""
         for _, ball in ipairs(beyblades) do
             data = data .. string.format("ball %d %f %f;", ball.id, ball.body:getX(), ball.body:getY())
