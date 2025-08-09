@@ -2,3 +2,4 @@ assets/sprout_lands/*
 !assets/sprout_lands/read_me.txt
 
 build/
+env.lua
