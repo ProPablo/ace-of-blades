@@ -11,13 +11,13 @@ beyblade = {
   body,    -- component that holds information about the body (vel, pos, accel etc.)
   shape,   -- collision (one shape many fixtures, )
   fixture, -- size, scallable, drag (one body many fixtures)
-  spin = 20,
   launchVec = {
     x = 0,
     y = 0,
   },
   chosenShape = 0
 }
+beybladeMaxHealth = 100
 
 originX = 325
 originY = 325
@@ -37,6 +37,8 @@ function setupBlade(id)
   newBlade.body:setAngularDamping(0.5) -- slows spin over time
   newBlade.body:setLinearDamping(0.2)  -- slows movement over time
   newBlade.fixture:setFriction(friction)
+  newBlade.health = beybladeMaxHealth
+  newBlade.direction = 1 -- 1 for clockwise, -1 for counter-clockwise
   return newBlade
 end
 
@@ -49,6 +51,17 @@ function drawBlade(id)
   local y = localblade.body:getY()
   local angle = localblade.body:getAngle()
 
+
+    -- Show angular velocity above each beyblade
+    local av = localblade.body:getAngularVelocity()
+    local lv = localblade.body:getLinearVelocity()
+    love.graphics.setColor(1, 1, 1)
+
+    love.graphics.print(string.format("Spin: %.2f", localblade.health), localblade.body:getX() - 20,
+      localblade.body:getY() - circleRad - 20)
+    love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
+      localblade.body:getY() - circleRad - 30)
+
   if localblade.id == 1 then
     love.graphics.setColor(serverBladeColor)
   else
@@ -58,12 +71,12 @@ function drawBlade(id)
   love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
 
   -- localised spiral parameters (slightly protruding from beyblade)
-  local mode = 1               -- Archimedes spiral
-  local protrudeFactor = 1.3   -- 1.0 = inside, >1.0 = slight protrusion
+  local mode = 1             -- Archimedes spiral
+  local protrudeFactor = 1.3 -- 1.0 = inside, >1.0 = slight protrusion
   local maxRadius = circleRad * protrudeFactor
   local dep = 80
   local angularStep = 0.15
-  local K = maxRadius / (dep * angularStep)   -- scale so spiral ends just beyond blade
+  local K = maxRadius / (dep * angularStep) -- scale so spiral ends just beyond blade
 
   -- store drawing state
   -- love.graphics.push()
@@ -96,16 +109,6 @@ function drawBlade(id)
     A = A + angularStep
 
 
-    -- Show angular velocity above each beyblade
-    local av = localblade.body:getAngularVelocity()
-    local lv = localblade.body:getLinearVelocity()
-    love.graphics.setColor(1, 1, 1)
-    if debugMode then
-      love.graphics.print(string.format("Spin: %.2f", av), localblade.body:getX() - 20,
-        localblade.body:getY() - circleRad - 20)
-      love.graphics.print(string.format("Speed: %.2f", lv), localblade.body:getX() - 20,
-        localblade.body:getY() - circleRad - 30)
-    end
   end
 
   love.graphics.reset() -- Reset color to white

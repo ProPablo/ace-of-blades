@@ -1,8 +1,7 @@
-ANGULAR_VEL = 10000
-
 local ServerRpcCommands = {
   SERVER_TIME = "serverTime",
   BALL_UPDATE = "ballUpdate",
+  GAME_OVER = "gameOver",
 }
 
 local function acceptRpcClient()
@@ -25,7 +24,7 @@ local function acceptRpcClient()
             body = love.physics.newBody(world, ballData.x, ballData.y, "dynamic")
           }
         end
-
+        beyblades[id].health = ballData.health
         local body = beyblades[id].body
         body:setPosition(ballData.x, ballData.y)
         body:setLinearVelocity(ballData.vx, ballData.vy)
@@ -35,6 +34,12 @@ local function acceptRpcClient()
         end
       end
     end
+
+    if message.cmd == ServerRpcCommands.GAME_OVER then
+      loserId = message.loserId
+      Gamestate.switch(gameover)
+      return
+    end
   elseif err ~= "timeout" then
     print("Error receiving from server: " .. err)
   end
@@ -43,49 +48,48 @@ end
 local t = 0
 local serverTime = love.timer.getTime()
 local function serverSendPosUpdate(dt)
-    serverTime = love.timer.getTime()
-    t = t + dt
+  serverTime = love.timer.getTime()
+  t = t + dt
 
-    if t > updateRate then
-        t = t - updateRate
+  if t > updateRate then
+    t = t - updateRate
 
-        local ballData = {}
-        for _, ball in ipairs(beyblades) do
-            local vx, vy = ball.body:getLinearVelocity()
-            local av = ball.body:getAngularVelocity()
-            table.insert(ballData, {
-                id = ball.id,
-                x = ball.body:getX(),
-                y = ball.body:getY(),
-                vx = vx,
-                vy = vy,
-                av = av,
-                angle = ball.body:getAngle()
-            })
-        end
-
-        local updateMessage = {
-            cmd = ServerRpcCommands.BALL_UPDATE,
-            balls = ballData,
-            serverTime = serverTime
-        }
-
-        local jsonData = json.encode(updateMessage)
-        
-        if client then
-            udp:sendto(jsonData, client.ip, client.port)
-        end
+    local ballData = {}
+    for _, ball in ipairs(beyblades) do
+      local vx, vy = ball.body:getLinearVelocity()
+      local av = ball.body:getAngularVelocity()
+      table.insert(ballData, {
+        id = ball.id,
+        x = ball.body:getX(),
+        y = ball.body:getY(),
+        vx = vx,
+        vy = vy,
+        av = av,
+        angle = ball.body:getAngle(),
+        health = ball.health
+      })
     end
-end
 
+    local updateMessage = {
+      cmd = ServerRpcCommands.BALL_UPDATE,
+      balls = ballData,
+      serverTime = serverTime
+    }
+
+    local jsonData = json.encode(updateMessage)
+
+    if client then
+      udp:sendto(jsonData, client.ip, client.port)
+    end
+  end
+end
 
 function ripped:enter()
   if isServer then
     beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
-    beyblades[1].body:setAngularVelocity(ANGULAR_VEL)
 
     beyblades[2].body:applyForce(beyblades[2].launchVec.x, beyblades[2].launchVec.y)
-    beyblades[2].body:setAngularVelocity(ANGULAR_VEL)
+    beyblades[2].health = 20
   else
   end
 end
@@ -98,49 +102,59 @@ function ripped:draw()
   drawBlade(2)
 
   love.graphics.print("Ripped...", screen.width / 2, 200, 0, 2, 2)
-  if loserId then
-    love.graphics.print(string.format("Loser: %.2f", loserId), screen.width / 2, 220, 0, 2, 2)
+end
+
+beybladeDOT = 5
+MAX_ANGULAR_VEL = 50
+
+local function sendGameOverRpcFromServer()
+  local message = {
+    cmd = ServerRpcCommands.GAME_OVER,
+    loserId = loserId
+  }
+  local jsonData = json.encode(message)
+  udp:sendto(jsonData, client.ip, client.port)
+  print("Sent game over command to client")
+end
+
+local function updateBeyblade(dt, id)
+  local localBeyblade = beyblades[id]
+  localBeyblade.health = localBeyblade.health - dt * beybladeDOT
+  local remappedAv = remap(localBeyblade.health, 0, beybladeMaxHealth, 0, MAX_ANGULAR_VEL)
+  localBeyblade.body:setAngularVelocity(remappedAv * localBeyblade.direction)
+
+  if localBeyblade.health <= 0 then
+    localBeyblade.loser = true
+  end
+end
+
+function checkLoseCondition()
+  local beyblade1 = beyblades[1]
+  local beyblade2 = beyblades[2]
+
+  if beyblade1.health <= 0 and beyblade2.health <= 0 then
+    loserId = 0 -- Draw
+  elseif beyblade1.health <= 0 then
+    loserId = 1 -- Player 1 lost
+  elseif beyblade2.health <= 0 then
+    loserId = 2 -- Player 2 lost
+  end
+
+  if loserId ~= nil then
+    sendGameOverRpcFromServer()
+    Gamestate.switch(gameover)
   end
 end
 
 function ripped:update(dt)
   world:update(dt)
-  if (loserId) then
-    for _, localblade in pairs(beyblades) do
-      localblade.body:setAngularVelocity(0)
-      localblade.body:setLinearVelocity(0, 0)
-    end
-  end
-  if (love.keyboard.isDown("r")) then
-    Gamestate.switch(ready)
-  end
-  for _, localblade in pairs(beyblades) do
-    local spin = localblade.body:getAngularVelocity()
-    local vx, vy = localblade.body:getLinearVelocity()
-    if vx == 0 then
-      -- loserId = localblade.id
-    end
-
-    if math.abs(spin) > 0.1 then
-      local speed = math.sqrt(vx * vx + vy * vy)
-      local dirAngle = (speed > 1) and math.atan2(vy, vx) or localblade.body:getAngle()
-      local moveAngle = dirAngle + (spin > 0 and math.pi / 2 or -math.pi / 2)
-
-      local spinForce = spin * 5 -- start big to see effect
-      local fx = math.cos(moveAngle) * spinForce
-      local fy = math.sin(moveAngle) * spinForce
-
-      localblade.body:applyForce(fx, fy)
-    end
-
-    local damping = 0.05
-    if math.abs(spin) > 50 then
-      damping = 0.02
-    end
-    localblade.body:setLinearDamping(damping)
-  end
-
   if isServer then
+    updateBeyblade(dt, 1)
+    updateBeyblade(dt, 2)
+
+    checkLoseCondition()
+
+
     serverSendPosUpdate(dt)
   else
     acceptRpcClient()
