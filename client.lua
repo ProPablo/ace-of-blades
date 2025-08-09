@@ -57,49 +57,6 @@ local function addToBuffer(bufferedState)
 end
 
 
-function sup()
-    local data, err = udp:receive()
-    if data then
-        for segment in data:gmatch("([^;]+)") do
-            -- Try matching a ball packet: id, x, y, vx, vy, av
-            local cmd, id, x, y, vx, vy, av = segment:match(
-                "^%s*(%S+)%s+(%d+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$"
-            )
-            if cmd == "ball" then
-                id = tonumber(id)
-                x  = tonumber(x)
-                y  = tonumber(y)
-                vx = tonumber(vx)
-                vy = tonumber(vy)
-                av = tonumber(av)
-
-                if not beyblades[id] then
-                    beyblades[id] = {
-                        id = id,
-                        body = love.physics.newBody(world, x, y, "dynamic")
-                    }
-                end
-
-                local body = beyblades[id].body
-                body:setPosition(x, y)
-                body:setLinearVelocity(vx, vy)
-                body:setAngularVelocity(av)
-
-            else
-                -- Handle serverTime
-                local timeCmd, timeVal = segment:match("^%s*(%S+)%s+(%S+)%s*$")
-                if timeCmd == "serverTime" then
-                    serverTime = tonumber(timeVal)
-                end
-            end
-        end
-
-    elseif err ~= "timeout" then
-        print("Error receiving from server: " .. err)
-    end
-end
-
-
 local function interpolateBallState(state1, state2, t)
     return {
         id = state1.id,

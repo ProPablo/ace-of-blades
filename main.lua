@@ -26,6 +26,7 @@ debugMode = false
 serverTime = 0
 startCountdownTime = 0
 gamestartTime = 0
+json = require ("libs.dkjson.dkjson")
 
 function love.load(args)
     if arg[#arg] == "-debug" then

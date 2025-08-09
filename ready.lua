@@ -7,9 +7,9 @@ local ServerRpcCommands = {
   SERVER_TIME = "serverTime",
 }
 
-isDragging = false
-clientHasSetLaunchVec = false
-serverHasSetLaunchVec = false
+local isDragging = false
+local clientHasSetLaunchVec = false
+local serverHasSetLaunchVec = false
 
 
 local function drawRip()
@@ -46,60 +46,72 @@ local function drawRip()
   love.graphics.setColor(1, 1, 1)
 end
 
-function sendVectorRpcFromClient()
-  local data = string.format(
-    "%s %f %f %f %f",
-    ClientRpcCommands.LAUNCH_VEC,
-    beyblade.launchVec.x,
-    beyblade.launchVec.y,
-    beyblade.body:getX(),
-    beyblade.body:getY()
-  )
-  print("Sending vector server: " .. data)
-  udp:send(data)
+local function sendStateTransitionRpcFromServer(dt)
+    local message = {
+        cmd = ServerRpcCommands.STATE_TRANSITION
+    }
+    local jsonData = json.encode(message)
+    udp:sendto(jsonData, client.ip, client.port)
+    print("Sent state transition command to client")
+end
+
+
+local function sendVectorRpcFromClient()
+    local message = {
+        cmd = ClientRpcCommands.LAUNCH_VEC,
+        launchVec = {
+            x = beyblade.launchVec.x,
+            y = beyblade.launchVec.y
+        },
+        position = {
+            x = beyblade.body:getX(),
+            y = beyblade.body:getY()
+        }
+    }
+    
+    local jsonData = json.encode(message)
+    print("Sending vector to server: " .. jsonData)
+    udp:send(jsonData)
 end
 
 local function acceptRpcServer(dt)
-  local data, msg_or_ip, port = udp:receivefrom()
-  -- You would confirm which client this is here
-  if (data) then
-    local cmd, params = string.match(data, "^(%S+)%s*(.*)")
-    print("Received command: " .. cmd)
-    if cmd == ClientRpcCommands.LAUNCH_VEC then
-      local xLaunch, yLaunch, x, y = string.match(params, "([%-%d%.]+)%s+([%-%d%.]+)%s+([%-%d%.]+)%s+([%-%d%.]+)")
-      xLaunch = tonumber(xLaunch)
-      yLaunch = tonumber(yLaunch)
-      x = tonumber(x)
-      y = tonumber(y)
-      print("Parsed launch vector: x=%f, y=%f launching x=%f, y=%f", x, y, xLaunch, yLaunch)
-      beyblades[2].launchVec = { x = xLaunch, y = yLaunch }
-      beyblades[2].body:setPosition(x, y)
-      clientHasSetLaunchVec = true
-    else
-      print("Unknown command: " .. cmd)
+    local data, msg_or_ip, port = udp:receivefrom()
+    if data then
+        local message = json.decode(data)
+        print("Received command: " .. message.cmd)
+        
+        if message.cmd == ClientRpcCommands.LAUNCH_VEC then
+            local launchVec = message.launchVec
+            local position = message.position
+            
+            print(string.format("Parsed launch vector: x=%.2f, y=%.2f at position x=%.2f, y=%.2f", 
+                  launchVec.x, launchVec.y, position.x, position.y))
+            
+            beyblades[2].launchVec = { x = launchVec.x, y = launchVec.y }
+            beyblades[2].body:setPosition(position.x, position.y)
+            clientHasSetLaunchVec = true
+        else
+            print("Unknown command: " .. message.cmd)
+        end
     end
-  end
-end
-
-local function sendStateTransitionRpcFromServer(dt)
-  udp:sendto(ServerRpcCommands.STATE_TRANSITION, client.ip, client.port)
-  print("Sent state transition command to client: " .. ServerRpcCommands.STATE_TRANSITION .. " to " .. client.ip .. ":" .. client.port)
 end
 
 local function acceptRpcClient(dt)
-  local data, err = udp:receive()
-  if data then
-    print("Received data from server: " .. data)
-     if data == ServerRpcCommands.STATE_TRANSITION then
-        print("Received state transition command from server")
-        Gamestate.switch(countdown)
-        return 
-      end
-  
-  elseif err ~= "timeout" then
-    print("Error receiving from server: " .. err)
-  end
+    local data, err = udp:receive()
+    if data then
+        local message = json.decode(data)
+        print("Received data from server: " .. message.cmd)
+        
+        if message.cmd == ServerRpcCommands.STATE_TRANSITION then
+            print("Received state transition command from server")
+            Gamestate.switch(countdown)
+            return 
+        end
+    elseif err ~= "timeout" then
+        print("Error receiving from server: " .. err)
+    end
 end
+
 
 local function resetGameState()
   setupBlocks()

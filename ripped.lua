@@ -1,49 +1,80 @@
 ANGULAR_VEL = 10000
 
-
+local ServerRpcCommands = {
+  SERVER_TIME = "serverTime",
+  BALL_UPDATE = "ballUpdate",
+}
 
 local function acceptRpcClient()
-    local data, err = udp:receive()
-    if data then
-        for segment in data:gmatch("([^;]+)") do
-            -- Try matching a ball packet: id, x, y, vx, vy, av
-            local cmd, id, x, y, vx, vy, av, ap = segment:match(
-                "^%s*(%S+)%s+(%d+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$"
-            )
-            if cmd == "ball" then
-                id = tonumber(id)
-                x  = tonumber(x)
-                y  = tonumber(y)
-                vx = tonumber(vx)
-                vy = tonumber(vy)
-                av = tonumber(av)
-                ap = tonumber(ap)
-                print(string.format("Received ball: id=%d, x=%.2f, y=%.2f, vx=%.2f, vy=%.2f, av=%.2f, ap=%.2f", id, x, y, vx, vy, av, ap))
+  local data, err = udp:receive()
+  if data then
+    local message = json.decode(data)
 
-                if not beyblades[id] then
-                    beyblades[id] = {
-                        id = id,
-                        body = love.physics.newBody(world, x, y, "dynamic")
-                    }
-                end
+    if message.cmd == ServerRpcCommands.BALL_UPDATE then
+      -- Update server time
+      if message.serverTime then
+        serverTime = message.serverTime
+      end
 
-                local body = beyblades[id].body
-                body:setPosition(x, y)
-                body:setLinearVelocity(vx, vy)
-                body:setAngularVelocity(av)
-                body:setAngle(ap)
-
-            else
-                -- Handle serverTime
-                local timeCmd, timeVal = segment:match("^%s*(%S+)%s+(%S+)%s*$")
-                if timeCmd == "serverTime" then
-                    serverTime = tonumber(timeVal)
-                end
-            end
+      -- Process ball updates
+      for _, ballData in ipairs(message.balls) do
+        local id = ballData.id
+        if not beyblades[id] then
+          beyblades[id] = {
+            id = id,
+            body = love.physics.newBody(world, ballData.x, ballData.y, "dynamic")
+          }
         end
 
-    elseif err ~= "timeout" then
-        print("Error receiving from server: " .. err)
+        local body = beyblades[id].body
+        body:setPosition(ballData.x, ballData.y)
+        body:setLinearVelocity(ballData.vx, ballData.vy)
+        body:setAngularVelocity(ballData.av)
+        if ballData.angle then
+          body:setAngle(ballData.angle)
+        end
+      end
+    end
+  elseif err ~= "timeout" then
+    print("Error receiving from server: " .. err)
+  end
+end
+
+local t = 0
+local serverTime = love.timer.getTime()
+local function serverSendPosUpdate(dt)
+    serverTime = love.timer.getTime()
+    t = t + dt
+
+    if t > updateRate then
+        t = t - updateRate
+
+        local ballData = {}
+        for _, ball in ipairs(beyblades) do
+            local vx, vy = ball.body:getLinearVelocity()
+            local av = ball.body:getAngularVelocity()
+            table.insert(ballData, {
+                id = ball.id,
+                x = ball.body:getX(),
+                y = ball.body:getY(),
+                vx = vx,
+                vy = vy,
+                av = av,
+                angle = ball.body:getAngle()
+            })
+        end
+
+        local updateMessage = {
+            cmd = ServerRpcCommands.BALL_UPDATE,
+            balls = ballData,
+            serverTime = serverTime
+        }
+
+        local jsonData = json.encode(updateMessage)
+        
+        if client then
+            udp:sendto(jsonData, client.ip, client.port)
+        end
     end
 end
 
@@ -51,13 +82,12 @@ end
 function ripped:enter()
   if isServer then
     beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
-    beyblades[1].body:setAngularVelocity(ANGULAR_VEL) 
+    beyblades[1].body:setAngularVelocity(ANGULAR_VEL)
 
     beyblades[2].body:applyForce(beyblades[2].launchVec.x, beyblades[2].launchVec.y)
-    beyblades[2].body:setAngularVelocity(ANGULAR_VEL) 
-  else 
+    beyblades[2].body:setAngularVelocity(ANGULAR_VEL)
+  else
   end
-
 end
 
 function ripped:draw()
