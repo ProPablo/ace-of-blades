@@ -2,7 +2,7 @@ ServerRpcCommands = {
   STATE_TRANSITION = "stateTransition",
 }
 local socket = require("socket")
-local updateRate = 1 / 30 -- 30 fps
+updateRate = 1 / 30 -- 30 fps
 
 client = nil
 function setupServer()
@@ -31,37 +31,5 @@ function acceptClient()
         Gamestate.switch(ready)
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
-    end
-end
-
-local t = 0
-local serverTime = love.timer.getTime()
-function serverSendPosUpdate(dt)
-    serverTime = love.timer.getTime()
-    t = t + dt
-
-    if t > updateRate then
-        t = t - updateRate
-
-        local data = ""
-        for _, ball in ipairs(beyblades) do
-            local vx, vy = ball.body:getLinearVelocity()
-            local av = ball.body:getAngularVelocity()
-            data = data .. string.format(
-                "ball %d %f %f %f %f %f %f;",
-                ball.id,
-                ball.body:getX(),
-                ball.body:getY(),
-                vx, vy, av,
-                ball.body:getAngle()
-            )
-        end
-        data = data .. string.format("serverTime %f", serverTime)
-        print("Sending data to client: " .. data)
-
-        if client then
-            udp:sendto(data, client.ip, client.port)
-            -- print("Sent update to client: " .. client.ip .. ":" .. client.port .. " - " .. data)
-        end
     end
 end
