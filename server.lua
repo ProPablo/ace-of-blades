@@ -7,14 +7,13 @@ function setupServer()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
     udp:settimeout(0) -- Set to non-blocking mode
     print("Server started on port " .. port)
-    beyblades = {} -- Initialize the balls table
 end
 
 function acceptClient()
     -- Accept a new client connection
     local data, msg_or_ip, port = udp:receivefrom()
     if data then
-        print("New client connected: " .. msg_or_ip .. ":" .. port .. " - " .. data)
+        print("New client connected: " .. msg_or_ip .. ":" .. port .. " - " .. data .. "Switching to ready state")
         id = 2
         client = {
             id = id,
@@ -23,9 +22,8 @@ function acceptClient()
             lastActive = love.timer.getTime()
         }
 
-        print("Sending ack")
         udp:sendto("ack", client.ip, client.port)
-        -- socket.sleep(0.01)
+        Gamestate.switch(ready)
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end
@@ -33,7 +31,7 @@ end
 
 local t = 0
 local serverTime = love.timer.getTime( )
-function sendServerUpdate(dt)
+function rippedSendServerUpdate(dt)
     serverTime = love.timer.getTime()
     t = t + dt 
 	
@@ -50,8 +48,6 @@ function sendServerUpdate(dt)
             udp:sendto(data, client.ip, client.port)
             print("Sent update to client: " .. client.ip .. ":" .. client.port .. " - " .. data)
         end
-
     end
-
 end
 
