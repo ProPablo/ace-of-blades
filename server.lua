@@ -28,7 +28,7 @@ function acceptClient()
         }
 
         udp:sendto("ack", client.ip, client.port)
-        Gamestate.switch(ready)
+        Gamestate.switch(prep)
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end

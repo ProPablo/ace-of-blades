@@ -30,7 +30,7 @@ function setupClient()
     if response == "ack" then
         udp:settimeout(0) -- Set to non-blocking
         print("Connected to server!")
-        Gamestate.switch(ready)
+        Gamestate.switch(prep)
     else
         error("No server response")
     end
