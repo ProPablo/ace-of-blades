@@ -1,3 +1,4 @@
+os = ""
 function setToSecondMonitor()
     local targetMonitor = 1 -- Change this to the desired monitor number
     
@@ -37,3 +38,17 @@ end
 
 
 function lerp(a, b, t) return a + (b - a) * t end
+
+function love.load()
+    os = love.system.getOS()
+
+    if os == "Linux" then
+        print("Running on Linux — doing Linux-specific stuff.")
+        -- Linux-specific code here
+    elseif os == "OS X" or os == "Windows" then
+        print("Running on macOS or Windows — doing something else.")
+        -- macOS/Windows-specific code here
+    else
+        print("Running on " .. os .. " — no special handling.")
+    end
+end

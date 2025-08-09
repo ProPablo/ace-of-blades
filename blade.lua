@@ -12,7 +12,7 @@ beyblade = {
   shape,   -- collision (one shape many fixtures, )
   fixture, -- size, scallable, drag (one body many fixtures)
   spin = 20,
-  vec = {
+  launchVec = {
     x = 0,
     y = 0,
   },
@@ -111,7 +111,7 @@ function drawBlade()
         localblade.body:getY() - circleRad - 30)
     end
   end
-  if not isDragging and not hasSet then
+  if not isDragging and not clientHasSetLaunchVec then
     love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
   end
   love.graphics.reset() -- Reset color to white

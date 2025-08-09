@@ -1,9 +1,13 @@
 require("util")
 local socket = require("socket")
-serverAddress = "127.0.0.1"
-
+require("env")
 
 function setupClient()
+    love.window.setTitle("Ace of Blades Client")
+
+    if not serverAddress then
+        serverAddress = "127.0.0.1"
+    end
     udp = socket.udp()
     udp:settimeout(5) -- Block for up to 5 seconds
     local success, err = udp:setpeername(serverAddress, port)

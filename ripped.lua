@@ -7,7 +7,7 @@ function ripped:enter()
     if isServer then
       beyblade = beyblades[1]
     end
-    beyblade.body:applyForce(beyblade.vec.x, beyblade.vec.y)
+    beyblade.body:applyForce(beyblade.launchVec.x, beyblade.launchVec.y)
     -- Big spin-up
     -- beyblade.body:applyTorque(500000)
     -- Optional: give an immediate angular velocity boost (instant spin)

@@ -1,12 +1,10 @@
-TIMER_CONST = 2
-timer = TIMER_CONST
 isDragging = false
-hasSet = false
+clientHasSetLaunchVec = false
+serverHasSetLaunchVec = false
 
 function resetGameState()
   setupBlocks()
-  hasSet = false
-  timer = TIMER_CONST
+  clientHasSetLaunchVec = false
 
   for _, blade in ipairs(beyblades) do
     blade.body:destroy() -- optional in LÖVE 12.0+, else just nil it
@@ -22,8 +20,14 @@ end
 
 function ready:update(dt)
   world:update(dt)
+  -- Rip it whether by timer or by user input
+  if clientHasSetLaunchVec and serverHasSetLaunchVec then
+    gamestartTime = serverTime + 5 -- start game 5 seconds from now
+    Gamestate.switch(countdown)
+  end
   if isServer then
     beyblade = beyblades[1]
+    ready:acceptRpcServer(dt)
     rippedSendServerUpdate(dt)
   else
     receiveClientUpdates()
@@ -36,21 +40,13 @@ function ready:update(dt)
     resetGameState()
   end
 
-  -- Rip it whether by timer or by user input
-  if (hasSet) then
-    timer = timer - dt
-    if (timer <= 0) then
-      timer = 0
-      Gamestate.switch(ripped)
-    end
-  end
 
-  if (love.keyboard.isDown("space") and hasSet) then
+  if (love.keyboard.isDown("space") and clientHasSetLaunchVec) then
     Gamestate.push(ripped)
   end
 
   -- If rip already set early return
-  if (hasSet) then return end
+  if (clientHasSetLaunchVec) then return end
 
   -- HOLD
   if (love.mouse.isDown(1) and isDragging == false) then
@@ -75,13 +71,15 @@ function ready:update(dt)
       -- Normalize direction
       local dirX = dx / length
       local dirY = dy / length
-
-      -- Scale force by length and modifier, and apply in opposite direction
       local fx = -dirX * length * forceMod
       local fy = -dirY * length * forceMod
-      beyblade.vec = { x = fx, y = fy }
-      -- beyblade.body:applyForce(fx, fy)
-      hasSet = true
+      beyblade.launchVec = { x = fx, y = fy }
+      if isServer then
+        serverHasSetLaunchVec = true
+      else
+        clientHasSetLaunchVec = true
+        sendVectorRpcFromClient()
+      end
       isDragging = false
     else
       print(length)
@@ -94,7 +92,7 @@ function ready:draw()
   drawBlocks()
   drawBlade()
   drawRip()
-  local setMsg = hasSet and "SET" or "READYING..."
+  local setMsg = clientHasSetLaunchVec and "SET" or "READYING..."
   love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
 end
 
@@ -130,4 +128,40 @@ function drawRip()
 
 
   love.graphics.setColor(1, 1, 1)
+end
+
+local RpcCommands = {
+  LAUNCH_VEC = "launchVec",
+}
+
+function sendVectorRpcFromClient()
+  local data = string.format(
+    "%s %f %f",
+    RpcCommands.LAUNCH_VEC,
+    beyblade.launchVec.x,
+    beyblade.launchVec.y
+  )
+  udp:send(data)
+end
+
+function ready:acceptRpcServer(dt)
+  local data, msg_or_ip, port = udp:receiveFrom()
+  if (data) then
+    local cmd, params = string.match(data, "^(%S+)%s*(.*)")
+    printf("Received command: " .. cmd)
+    if cmd == RpcCommands.LAUNCH_VEC then
+      local x, y = string.match(params, "([%-%d%.]+)%s+([%-%d%.]+)")
+      x = tonumber(x)
+      y = tonumber(y)
+      printf("Parsed launch vector: x=%f, y=%f", x, y)
+      beyblades[2].launchVec.x = x
+      beyblades[2].launchVec.y = y
+    else
+      printf("Unknown command: " .. cmd)
+    end
+  end
+end
+
+function ready:acceptRpcClient(dt)
+
 end

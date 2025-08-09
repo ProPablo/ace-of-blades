@@ -3,6 +3,7 @@
 lobby = {}
 prep = {}
 ready = {}
+countdown = {}
 ripped = {}
 loserId = nil
 
@@ -22,6 +23,8 @@ beyblades = {}
 debugMode = false
 
 currentTime = 0
+startCountdownTime = 0
+gamestartTime = 0
 
 function love.load(args)
     if arg[#arg] == "-debug" then
@@ -32,8 +35,9 @@ function love.load(args)
     require("blocks")
     require("prep")
     require("ready")
-    require("game")
+    require("countdown")
     require("ripped")
+    require("game")
     readArgs(args)
     
     Gamestate = require("libs/hump/gamestate")
