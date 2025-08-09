@@ -57,7 +57,7 @@ local function addToBuffer(bufferedState)
 end
 
 
-function receiveClientUpdates()
+function acceptRpcClient()
     local data, err = udp:receive()
     if data then
         for segment in data:gmatch("([^;]+)") do

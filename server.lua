@@ -1,9 +1,13 @@
+ServerRpcCommands = {
+  STATE_TRANSITION = "stateTransition",
+}
 local socket = require("socket")
 local updateRate = 1 / 30 -- 30 fps
 
 client = nil
 function setupServer()
     love.window.setTitle("Ace of Blades Server")
+    print(udp)
     udp = socket.udp()
     udp:setsockname("*", port) -- Bind to localhost and the specified port
     udp:settimeout(0)          -- Set to non-blocking mode
@@ -32,7 +36,7 @@ end
 
 local t = 0
 local serverTime = love.timer.getTime()
-function rippedSendServerUpdate(dt)
+function serverSendPosUpdate(dt)
     serverTime = love.timer.getTime()
     t = t + dt
 
@@ -55,7 +59,7 @@ function rippedSendServerUpdate(dt)
 
         if client then
             udp:sendto(data, client.ip, client.port)
-            print("Sent update to client: " .. client.ip .. ":" .. client.port .. " - " .. data)
+            -- print("Sent update to client: " .. client.ip .. ":" .. client.port .. " - " .. data)
         end
     end
 end

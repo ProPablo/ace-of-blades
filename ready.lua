@@ -1,3 +1,11 @@
+local ClientRpcCommands = {
+  LAUNCH_VEC = "launchVec",
+
+}
+local ServerRpcCommands = {
+  STATE_TRANSITION = "stateTransition",
+}
+
 isDragging = false
 clientHasSetLaunchVec = false
 serverHasSetLaunchVec = false
@@ -22,15 +30,16 @@ function ready:update(dt)
   world:update(dt)
   -- Rip it whether by timer or by user input
   if clientHasSetLaunchVec and serverHasSetLaunchVec then
-    gamestartTime = serverTime + 5 -- start game 5 seconds from now
+    sendStateTransitionRpcFromServer(dt)
     Gamestate.switch(countdown)
   end
   if isServer then
+    acceptRpcServer(dt)
     beyblade = beyblades[1]
-    ready:acceptRpcServer(dt)
-    rippedSendServerUpdate(dt)
+    serverSendPosUpdate(dt)
   else
-    receiveClientUpdates()
+    -- acceptRpcClient(dt)
+    acceptRpcClient(dt)
     beyblade = beyblades[2]
   end
 
@@ -40,13 +49,9 @@ function ready:update(dt)
     resetGameState()
   end
 
-
-  if (love.keyboard.isDown("space") and clientHasSetLaunchVec) then
-    Gamestate.push(ripped)
-  end
-
   -- If rip already set early return
-  if (clientHasSetLaunchVec) then return end
+  if isServer and serverHasSetLaunchVec then return end
+  if not isServer and clientHasSetLaunchVec then return end
 
   -- HOLD
   if (love.mouse.isDown(1) and isDragging == false) then
@@ -92,7 +97,13 @@ function ready:draw()
   drawBlocks()
   drawBlade()
   drawRip()
-  local setMsg = clientHasSetLaunchVec and "SET" or "READYING..."
+  local setMsg = ""
+  if isServer then
+    setMsg = serverHasSetLaunchVec and "SET" or "READYING..."
+  else
+    setMsg = clientHasSetLaunchVec and "SET" or "READYING..."
+  end
+
   love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
 end
 
@@ -130,38 +141,85 @@ function drawRip()
   love.graphics.setColor(1, 1, 1)
 end
 
-local RpcCommands = {
-  LAUNCH_VEC = "launchVec",
-}
-
 function sendVectorRpcFromClient()
   local data = string.format(
     "%s %f %f",
-    RpcCommands.LAUNCH_VEC,
+    ClientRpcCommands.LAUNCH_VEC,
     beyblade.launchVec.x,
     beyblade.launchVec.y
   )
   udp:send(data)
 end
 
-function ready:acceptRpcServer(dt)
-  local data, msg_or_ip, port = udp:receiveFrom()
+function acceptRpcServer(dt)
+  local data, msg_or_ip, port = udp:receivefrom()
   if (data) then
     local cmd, params = string.match(data, "^(%S+)%s*(.*)")
-    printf("Received command: " .. cmd)
-    if cmd == RpcCommands.LAUNCH_VEC then
+    print("Received command: " .. cmd)
+    if cmd == ClientRpcCommands.LAUNCH_VEC then
       local x, y = string.match(params, "([%-%d%.]+)%s+([%-%d%.]+)")
       x = tonumber(x)
       y = tonumber(y)
-      printf("Parsed launch vector: x=%f, y=%f", x, y)
-      beyblades[2].launchVec.x = x
-      beyblades[2].launchVec.y = y
+      print("Parsed launch vector: x=%f, y=%f", x, y)
+      beyblades[2].launchVec = { x = x, y = y }
+      clientHasSetLaunchVec = true
     else
-      printf("Unknown command: " .. cmd)
+      print("Unknown command: " .. cmd)
     end
   end
 end
 
-function ready:acceptRpcClient(dt)
+function sendStateTransitionRpcFromServer(dt)
+  udp:sendto(ServerRpcCommands.STATE_TRANSITION, client.ip, client.port)
+  print("Sent state transition command to client: " .. ServerRpcCommands.STATE_TRANSITION)
+end
 
+function acceptRpcClient(dt)
+  local data, err = udp:receive()
+  if data then
+    for segment in data:gmatch("([^;]+)") do
+      -- Try matching a ball packet: id, x, y, vx, vy, av
+      local cmd, id, x, y, vx, vy, av = segment:match(
+        "^%s*(%S+)%s+(%d+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$"
+      )
+      if cmd == "ball" then
+        id = tonumber(id)
+        x  = tonumber(x)
+        y  = tonumber(y)
+        vx = tonumber(vx)
+        vy = tonumber(vy)
+        av = tonumber(av)
+
+        if not beyblades[id] then
+          beyblades[id] = {
+            id = id,
+            body = love.physics.newBody(world, x, y, "dynamic")
+          }
+        end
+
+        local body = beyblades[id].body
+        body:setPosition(x, y)
+        body:setLinearVelocity(vx, vy)
+        body:setAngularVelocity(av)
+      elseif cmd == ServerRpcCommands.STATE_TRANSITION then
+        print("Received state transition command from server")
+        Gamestate.switch(countdown)
+      else
+        -- TODO
+        -- Handle serverTime
+        local timeCmd, timeVal = segment:match("^%s*(%S+)%s+(%S+)%s*$")
+        if timeCmd == "serverTime" then
+          serverTime = tonumber(timeVal)
+        end
+      end
+    end
+  elseif err ~= "timeout" then
+    print("Error receiving from server: " .. err)
+  end
+end
+
+function ready:leave()
+  -- if isServer then
+  --   sendStateTransitionRpcFromServer()
+  -- end
 end

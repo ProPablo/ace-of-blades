@@ -64,8 +64,8 @@ function ripped:update(dt)
   end
 
   if isServer then
-    rippedSendServerUpdate(dt)
+    serverSendPosUpdate(dt)
   else
-    receiveClientUpdates()
+    acceptRpcClient()
   end
 end

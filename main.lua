@@ -9,6 +9,7 @@ loserId = nil
 
 isServer = false
 port = 12345
+udp = {}
 
 -- FORCE VALUES
 val = 0 -- establish a variable for later use
@@ -22,7 +23,7 @@ forceMod = 100000
 beyblades = {}
 debugMode = false
 
-currentTime = 0
+serverTime = 0
 startCountdownTime = 0
 gamestartTime = 0
 
@@ -90,10 +91,12 @@ function lobby:draw()
 end
 
 function lobby:update(dt)
-    currentTime = currentTime + dt
     if isServer then
         acceptClient()
     else
     end
 end
 
+function love:update(dt)
+    serverTime = love.timer.getTime()
+end
