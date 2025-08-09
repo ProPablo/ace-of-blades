@@ -23,6 +23,8 @@ function acceptClient()
             port = port,
             lastActive = love.timer.getTime()
         }
+
+        print("Sending ack")
         udp:sendto("ack", client.id, client.port)
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)

@@ -1,5 +1,5 @@
 local socket = require("socket")
-serverAddress = "127.0.0.1"
+serverAddress = "localhost"
 
 function setupClient()
     udp = socket.udp()
