@@ -1,8 +1,9 @@
 function setToSecondMonitor()
-    local targetMonitor = 0 -- Change this to the desired monitor number
+    local targetMonitor = 1 -- Change this to the desired monitor number
     local desktopWidth, desktopHeight = love.window.getDesktopDimensions(targetMonitor)
+    print("Setting window to second monitor with dimensions: " .. desktopWidth .. "x" .. desktopHeight)
 
-    love.window.setMode(400, 400, {
+    love.window.setMode(800, 600, {
         x = desktopWidth + 30,
         y = 30,
         resizable = true
@@ -16,7 +17,7 @@ function readArgs(args)
             print("Server mode enabled")
         end
         if v == "-d" then
-            debugMode = false
+            debugMode = true
             print("Debug mode disabled")
         end
     end

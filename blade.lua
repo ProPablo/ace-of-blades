@@ -32,13 +32,21 @@ function setupBlade(id)
   newBlade.fixture:setFriction(friction)
   return newBlade
 end
+local serverBladeColor = {0.76, 0.18, 0.05} -- Red
+local clientBladeColor = {0.05, 0.18, 0.76} -- Blue
 
 function drawBlade()
   for _, localblade in pairs(beyblades) do
     local x = localblade.body:getX()
     local y = localblade.body:getY()
     local angle = localblade.body:getAngle()
-    love.graphics.setColor(0.76, 0.18, 0.05)
+
+    if localblade.id == 1 then
+      love.graphics.setColor(serverBladeColor)
+    else
+      love.graphics.setColor(clientBladeColor)
+    end
+
     love.graphics.circle("fill", localblade.body:getX(), localblade.body:getY(), circleRad)
 
     -- localised spiral parameters (slightly protruding from beyblade)
