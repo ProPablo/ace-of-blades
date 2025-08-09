@@ -25,8 +25,31 @@ originY = 325
 friction = 0.0
 circleRad = 35
 
+PHYSICS_CATEGORIES = {
+  BEYBLADE = 2,
+  WALL = 4,
+}
 
+-- TODO fix usage of this
+shapesInfo = {
+    { name = "Stick...",  type = SHAPE.STICK },
+    { name = "Circle", type = SHAPE.CIRCLE },
+    { name = "Pentagon",  type = SHAPE.PENTAGON }
+}
 
+function shapeType2String(shapeType)
+  if shapeType == SHAPE.STICK then
+    return "Stick"
+  elseif shapeType == SHAPE.CIRCLE then
+    return "Circle"
+  elseif shapeType == SHAPE.PENTAGON then
+    return "Pentagon"
+  else
+    return "Unknown Shape"
+  end
+end
+
+  
 serverBladeColor = { 0.76, 0.18, 0.05 } -- Red
 clientBladeColor = { 0.05, 0.18, 0.76 } -- Blue
 

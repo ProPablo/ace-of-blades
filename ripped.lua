@@ -87,25 +87,30 @@ end
 
 -- Collision callback
 local function beginContact(a, b, coll)
-  local bodyA = a:getBody()
-  local bodyB = b:getBody()
-  -- Check if either body is a Beyblade
-  local isBodyABeyblade1 = (bodyA == beyblades[1].body)
-  local isBodyBBeyblade1 = (bodyB == beyblades[1].body)
+  print("Collision detected between " .. a:getCategory() .. " and " .. b:getCategory())
 
-
-  local isBodyABeyblade1 = (bodyA == beyblades[1].body)
-  local isBodyBBeyblade1 = (bodyB == beyblades[1].body)
-
-  -- if isBodyABeyblade and isBodyBBeyblade then
-  --   -- Both are beyblades, transfer spin both ways
-  --   transferSpin(bodyA, bodyB)
-  --   transferSpin(bodyB, bodyA)
-  -- elseif isBodyABeyblade then
-  --   bladeHitWall(bodyA)
-  -- elseif isBodyBBeyblade then
-  --   bladeHitWall(bodyB)
-  -- end
+  if a:getCategory() == PHYSICS_CATEGORIES.WALL and b:getCategory() == PHYSICS_CATEGORIES.BEYBLADE then
+    local beyblade = b:getUserData()
+    if beyblade then
+      beyblade.direction = -beyblade.direction
+      beyblade.health = beyblade.health - 1
+    end
+  elseif b:getCategory() == PHYSICS_CATEGORIES.WALL and a:getCategory() == PHYSICS_CATEGORIES.BEYBLADE then
+    local beyblade = a:getUserData()
+    if beyblade then
+      beyblade.direction = -beyblade.direction
+      beyblade.health = beyblade.health - 1
+    end
+  elseif a:getCategory() == PHYSICS_CATEGORIES.BEYBLADE and b:getCategory() == PHYSICS_CATEGORIES.BEYBLADE then
+    local beybladeA = a:getUserData()
+    local beybladeB = b:getUserData()
+    if beybladeA and beybladeB then
+      beybladeA.direction = -beybladeA.direction
+      beybladeB.direction = -beybladeB.direction
+      beybladeA.health = beybladeA.health - 1
+      beybladeB.health = beybladeB.health - 1
+    end
+  end
 end
 
 
@@ -114,7 +119,7 @@ function ripped:enter()
     beyblades[1].body:applyForce(beyblades[1].launchVec.x, beyblades[1].launchVec.y)
 
     beyblades[2].body:applyForce(beyblades[2].launchVec.x, beyblades[2].launchVec.y)
-    beyblades[2].health = 20
+    -- beyblades[2].health = 20
 
     world:setCallbacks(beginContact)
   else
@@ -129,6 +134,9 @@ function ripped:draw()
   drawBlade(2)
 
   love.graphics.print("Ripped...", screen.width / 2, 200, 0, 2, 2)
+
+  love.graphics.print("Host: " .. beyblades[1].health, screen.width / 4, 250, 0, 2, 2)
+  love.graphics.print("Guest: " .. beyblades[2].health, screen.width* (3 / 4), 250, 0, 2, 2)
 end
 
 beybladeDOT = 5
