@@ -21,7 +21,8 @@ function setupClient()
         error("Failed to send join request:", err)
         return
     end
-    love.timer.sleep(0.1) 
+    love.timer.sleep(0.5) 
+
     
     print("Waiting for server...")
     
