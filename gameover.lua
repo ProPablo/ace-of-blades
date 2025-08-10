@@ -12,7 +12,7 @@ local function acceptRpcClient(dt)
         print("Received data from server: " .. message.cmd)
 
         if message.cmd == ServerRpcCommands.RESTART then
-            print("Received state transition command from server")
+            print("Received restart command from the server")
             Gamestate.switch(prep)
             return
         end

@@ -59,3 +59,16 @@ end
 function remap(value, in_min, in_max, out_min, out_max)
     return (value - in_min) / (in_max - in_min) * (out_max - out_min) + out_min
 end
+
+
+function flushUdpBuffer(udp)
+    while true do
+        local data, ip, port = udp:receive()
+        if not data then
+            -- nothing left to read, break
+            break
+        end
+        -- optionally print/log discarded packets
+        print("Flushed packet from", ip, port, ":", data)
+    end
+end

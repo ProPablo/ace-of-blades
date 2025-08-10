@@ -3,7 +3,7 @@ local ClientRpcCommands = {
 
 }
 local ServerRpcCommands = {
-  STATE_TRANSITION = "stateTransition",
+  STATE_TRANSITION = "transitionFromReady",
   SERVER_TIME = "serverTime",
 }
 
@@ -25,7 +25,7 @@ local function drawRip()
     local dy = my - sy
     mirrorX = sx - dx
     mirrorY = sy - dy
-
+    
     -- Draw force direction arrow (start to mirror)
     love.graphics.setColor(0, 1, 0) -- bright green
     love.graphics.line(sx, sy, mirrorX, mirrorY)
@@ -103,7 +103,7 @@ local function acceptRpcClient(dt)
     print("Received data from server: " .. message.cmd)
 
     if message.cmd == ServerRpcCommands.STATE_TRANSITION then
-      print("Received state transition command from server")
+      print("Received state transition command to countdown server")
       Gamestate.switch(countdown)
       return
     end

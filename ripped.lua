@@ -178,7 +178,10 @@ local function updateBeyblade(dt, id)
   end
 end
 
-function checkLoseCondition()
+local function checkLoseCondition()
+  if not isServer then
+    return
+  end
   local beyblade1 = beyblades[1]
   local beyblade2 = beyblades[2]
 

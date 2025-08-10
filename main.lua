@@ -70,6 +70,8 @@ function lobby:enter()
         setupClient()
         setToSecondMonitor()
     end
+
+    flushUdpBuffer(udp)
 end
 
 function lobby:draw()

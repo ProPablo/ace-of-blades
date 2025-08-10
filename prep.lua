@@ -3,7 +3,7 @@ local ClientRpcCommands = {
 }
 
 local ServerRpcCommands = {
-  STATE_TRANSITION = "stateTransition",
+  STATE_TRANSITION = "transitionfromPrep",
   HAS_SELECTED = "selected",
 }
 
@@ -160,7 +160,7 @@ local function acceptRpcClient(dt)
     print("Received data from server: " .. message.cmd)
 
     if message.cmd == ServerRpcCommands.STATE_TRANSITION then
-      print("Received state transition command from server")
+      print("Received state transition command from  to go to ready")
       Gamestate.switch(ready)
       return
     end

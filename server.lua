@@ -1,6 +1,3 @@
-ServerRpcCommands = {
-    STATE_TRANSITION = "stateTransition",
-}
 local socket = require("socket")
 updateRate = 1 / 30 -- 30 fps
 
