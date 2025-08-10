@@ -1,4 +1,4 @@
-blocksWidth = 50
+blocksWidth = 60
 
 local friction = 0.01
 

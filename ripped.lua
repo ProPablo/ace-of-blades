@@ -1,16 +1,17 @@
 local ServerRpcCommands = {
   SERVER_TIME = "serverTime",
   BALL_UPDATE = "ballUpdate",
+  ULTED_FROM_SERVER = "ultedFromServer",
   GAME_OVER = "gameOver",
 }
 
 local ClientRpcCommands = {
-  ULT = "ult"
+  ULTED_FROM_CLIENT = "ultedFromClient"
 }
 
-local function sendCommandFromClient()
+local function sendUltFromClient()
   local message = {
-    shape = beyblade[2].chosenShape
+    cmd = ClientRpcCommands.ULTED_FROM_CLIENT,
   }
 
   local jsonData = json.encode(message)
@@ -22,7 +23,6 @@ local function acceptRpcClient()
   local data, err = udp:receive()
   if data then
     local message = json.decode(data)
-
     if message.cmd == ServerRpcCommands.BALL_UPDATE then
       -- Update server time
       if message.serverTime then
@@ -49,6 +49,13 @@ local function acceptRpcClient()
       end
     end
 
+    if message.cmd == ServerRpcCommands.ULTED_FROM_SERVER then
+      print("Received ult command from client")
+      beyblades[1].hasUlt = false
+    else
+      -- print("Unknown command: " .. message.cmd)
+    end
+
     if message.cmd == ServerRpcCommands.GAME_OVER then
       loserId = message.loserId
       Gamestate.switch(gameover)
@@ -56,6 +63,20 @@ local function acceptRpcClient()
     end
   elseif err ~= "timeout" then
     print("Error receiving from server: " .. err)
+  end
+end
+
+local function acceptRpcServer(dt)
+  local data, msg_or_ip, port = udp:receivefrom()
+  if data then
+    local message = json.decode(data)
+    if message.cmd == ClientRpcCommands.ULTED_FROM_CLIENT then
+      print("Received ult command from client")
+      beyblades[2].hasUlt = false
+      handleUlt(beyblades[2])
+    else
+      print("Unknown command: " .. message.cmd)
+    end
   end
 end
 
@@ -95,6 +116,18 @@ local function serverSendPosUpdate(dt)
     if client then
       udp:sendto(jsonData, client.ip, client.port)
     end
+  end
+end
+
+local function serverSendUlt()
+  local updateMessage = {
+    cmd = ServerRpcCommands.ULTED_FROM_SERVER,
+  }
+
+  local jsonData = json.encode(updateMessage)
+
+  if client then
+    udp:sendto(jsonData, client.ip, client.port)
   end
 end
 
@@ -147,11 +180,23 @@ function ripped:draw()
   drawBlade(1)
   drawBlade(2)
   local winWidth = love.graphics.getWidth()
+  local windHeight = love.graphics.getHeight()
   love.graphics.setColor(1, 0, 0)
   love.graphics.print(math.floor(beyblades[1].health + 0.5), winWidth / 4, 250, 0, 2, 2)
   love.graphics.setColor(0, 0, 1)
   love.graphics.print(math.floor(beyblades[2].health + 0.5), winWidth * (3 / 4), 250, 0, 2, 2)
   love.graphics.setColor(1, 1, 1)
+
+  local ultMsg = "Press [SPACE] to Ult"
+  if isServer then
+    if beyblades[1].hasUlt then
+      love.graphics.print(ultMsg, winWidth / 3, windHeight / 2, 0, 2, 2)
+    end
+  else
+    if beyblades[2].hasUlt then
+      love.graphics.print(ultMsg, winWidth / 3, windHeight / 2, 0, 2, 2)
+    end
+  end
 end
 
 beybladeDOT = 5
@@ -171,6 +216,13 @@ local function updateBeyblade(dt, id)
   local localBeyblade = beyblades[id]
   localBeyblade.health = localBeyblade.health - dt * beybladeDOT
   local remappedAv = remap(localBeyblade.health, 0, beybladeMaxHealth, 0, MAX_ANGULAR_VEL)
+  if localBeyblade.chosenShape == SHAPE.STICK then
+    if localBeyblade.stickEndTime and love.timer.getTime() < localBeyblade.stickEndTime then
+      remappedAv = remappedAv * 5 -- Halve the angular velocity for stick shape during ult
+    else
+      localBeyblade.stickEndTime = nil -- Reset stick end time if ult is over
+    end
+  end
   localBeyblade.body:setAngularVelocity(remappedAv * localBeyblade.direction)
 
   if localBeyblade.health <= 0 then
@@ -212,9 +264,47 @@ local function moveTowardsOpponentInstant(b1, b2)
   end
 end
 
+
+PENTAGON_LAUNCH_VEL = 100
+
+function handleUlt(blade)
+  local chosenShape = blade.chosenShape
+  if (chosenShape == SHAPE.STICK) then
+    blade.stickEndTime = love.timer.getTime() + 1
+    print("Stick shape ult activated for " .. blade.id)
+  elseif (chosenShape == SHAPE.CIRCLE) then
+    print("Circle shape ult activated for " .. blade.id)
+    blade.health = blade.health + 1 -- Heal for circle shape
+  elseif (chosenShape == SHAPE.PENTAGON) then
+    local otherBlade = nil
+    if blade.id == 1 then
+      otherBlade = beyblades[2]
+    else
+      otherBlade = beyblades[1]
+    end
+
+    local dx = otherBlade.body:getX() - blade.body:getX()
+    local dy = otherBlade.body:getY() - blade.body:getY()
+    -- Calculate normalized vec
+    local dist = math.sqrt(dx * dx + dy * dy)
+    if dist > 0 then
+      local fx = (dx / dist) * CHASE_FORCE
+      local fy = (dy / dist) * CHASE_FORCE
+      blade.body:setLinearVelocity(fx, fy)
+    end
+    print("Pentagon shape ult activated for " .. blade.id)
+  end
+end
+
 function ripped:update(dt)
   world:update(dt)
   if isServer then
+    if (love.keyboard.isDown("space") and beyblades[1].hasUlt) then
+      beyblades[1].hasUlt = false
+      serverSendUlt()
+      handleUlt(beyblades[1])
+    end
+
     updateBeyblade(dt, 1)
     updateBeyblade(dt, 2)
 
@@ -225,8 +315,12 @@ function ripped:update(dt)
 
 
     serverSendPosUpdate(dt)
+    acceptRpcServer(dt)
   else
-    -- sendCommandFromClient()
+    if (love.keyboard.isDown("space") and beyblades[2].hasUlt) then
+      beyblades[2].hasUlt = false
+      sendUltFromClient()
+    end
     acceptRpcClient()
   end
 end

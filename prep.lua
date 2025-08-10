@@ -10,6 +10,7 @@ local ServerRpcCommands = {
 local selection = 0
 
 local function prepBeyblade(newBlade)
+  newBlade.hasUlt = true
   newBlade.health = beybladeMaxHealth
 
   if newBlade.id == 1 then

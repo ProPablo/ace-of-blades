@@ -76,7 +76,7 @@ end
 
 function lobby:draw()
     love.graphics.setColor(1, 1, 1) -- Set color to white
-    love.graphics.print("Welcome to the Beyblade Game!" .. (isServer and " (Server Mode)" or " (Client Mode)"), 100, 150)
+    love.graphics.print("Welcome to Ace of Blades!" .. (isServer and " (Server Mode)" or " (Client Mode)"), 100, 150)
 end
 
 function lobby:update(dt)
