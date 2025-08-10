@@ -280,8 +280,8 @@ function handleUlt(blade)
       otherBlade = beyblades[1]
     end
 
-    local dx = blade.body:getX() - otherBlade.body:getX()
-    local dy = blade.body:getY() - otherBlade.body:getY()
+    local dx = otherBlade.body:getX() - blade.body:getX()
+    local dy = otherBlade.body:getY() - blade.body:getY()
     -- Calculate normalized vec
     local dist = math.sqrt(dx * dx + dy * dy)
     if dist > 0 then
