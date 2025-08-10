@@ -55,7 +55,6 @@ clientBladeColor = { 0.05, 0.18, 0.76 } -- Blue
 
 function drawBlade(id)
   local localblade = beyblades[id]
-  love.graphics.print("selection " .. localblade.chosenShape, screen.width / 2, 300, 0, 2, 2)
 
   local x = localblade.body:getX()
   local y = localblade.body:getY()

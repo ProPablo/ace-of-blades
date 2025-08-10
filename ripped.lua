@@ -4,6 +4,20 @@ local ServerRpcCommands = {
   GAME_OVER = "gameOver",
 }
 
+local ServerRpcCommands = {
+  ULT = "ult"
+}
+
+local function sendCommandFromClient()
+  local message = {
+    shape = beyblade[2].chosenShape
+  }
+
+  local jsonData = json.encode(message)
+  print("Sending ult to server: " .. jsonData)
+  udp:send(jsonData)
+end
+
 local function acceptRpcClient()
   local data, err = udp:receive()
   if data then
@@ -128,16 +142,16 @@ function ripped:enter()
 end
 
 function ripped:draw()
-  drawDebug()
   drawBlocks()
 
   drawBlade(1)
   drawBlade(2)
-
-  love.graphics.print("Ripped...", screen.width / 2, 200, 0, 2, 2)
-
-  love.graphics.print("Host: " .. beyblades[1].health, screen.width / 4, 250, 0, 2, 2)
-  love.graphics.print("Guest: " .. beyblades[2].health, screen.width* (3 / 4), 250, 0, 2, 2)
+  local winWidth = love.graphics.getWidth()
+  love.graphics.setColor(1, 0, 0)
+  love.graphics.print(math.floor(beyblades[1].health + 0.5), winWidth / 4, 250, 0, 2, 2)
+  love.graphics.setColor(0, 0, 1)
+  love.graphics.print(math.floor(beyblades[2].health + 0.5), winWidth * (3 / 4), 250, 0, 2, 2)
+  love.graphics.setColor(1, 1, 1)
 end
 
 beybladeDOT = 5
@@ -185,14 +199,14 @@ end
 local CHASE_FORCE = 5000 -- tweak for strength
 
 local function moveTowardsOpponentInstant(b1, b2)
-    local dx = b2.body:getX() - b1.body:getX()
-    local dy = b2.body:getY() - b1.body:getY()
-    local dist = math.sqrt(dx*dx + dy*dy)
-    if dist > 0 then
-        local fx = (dx / dist) * CHASE_FORCE
-        local fy = (dy / dist) * CHASE_FORCE
-        b1.body:applyLinearImpulse(fx, fy)
-    end
+  local dx = b2.body:getX() - b1.body:getX()
+  local dy = b2.body:getY() - b1.body:getY()
+  local dist = math.sqrt(dx * dx + dy * dy)
+  if dist > 0 then
+    local fx = (dx / dist) * CHASE_FORCE
+    local fy = (dy / dist) * CHASE_FORCE
+    b1.body:applyLinearImpulse(fx, fy)
+  end
 end
 
 function ripped:update(dt)
@@ -209,6 +223,7 @@ function ripped:update(dt)
 
     serverSendPosUpdate(dt)
   else
+    sendCommandFromClient()
     acceptRpcClient()
   end
 end

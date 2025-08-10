@@ -46,10 +46,12 @@ local function acceptRpcClient()
       for _, ballData in ipairs(message.balls) do
         local id = ballData.id
         if not beyblades[id] then
-          beyblades[id] = {
-            id = id,
-            body = love.physics.newBody(world, ballData.x, ballData.y, "dynamic"),
-          }
+          -- TODO: ensure safe, commit:b5750a371be6f7b501bbc80fa8b1e7c631f2db3b brokey this
+          error("fucgma")
+          -- beyblades[id] = {
+          --   id = id,
+          --   body = love.physics.newBody(world, ballData.x, ballData.y, "dynamic"),
+          -- }
         end
         local body = beyblades[id].body
         body:setPosition(ballData.x, ballData.y)
