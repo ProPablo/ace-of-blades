@@ -8,7 +8,7 @@ function setupClient()
     if not serverAddress then
         serverAddress = "localhost"
     end
-    print("Connecting to server at " .. serverAddress, port)
+    print("Connecting to server at " .. serverAddress .. ":" .. port)
     udp = socket.udp()
     udp:settimeout(5) -- Block for up to 5 seconds
     local success, err = udp:setpeername(serverAddress, port)
