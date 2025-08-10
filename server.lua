@@ -6,8 +6,11 @@ function setupServer()
     love.window.setTitle("Ace of Blades Server")
     print(udp)
     udp = socket.udp()
-    udp:setsockname("*", port) -- Bind to localhost and the specified port
-    udp:settimeout(0)          -- Set to non-blocking mode
+    if (not hostAddress) then
+        hostAddress = "*"
+    end
+    udp:setsockname(hostAddress, port) -- Bind to localhost and the specified port
+    udp:settimeout(0)                    -- Set to non-blocking mode
     print("Server started on port " .. port)
 end
 
