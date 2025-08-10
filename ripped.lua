@@ -292,7 +292,7 @@ function handleUlt(blade)
     if dist > 0 then
       local fx = (dx / dist) * CHASE_FORCE
       local fy = (dy / dist) * CHASE_FORCE
-      blade.body:setLinearVelocity(fx, fy)
+      otherBlade.body:setLinearVelocity(fx, fy)
     end
     print("Pentagon shape ult activated for " .. blade.id)
   end
