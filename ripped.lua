@@ -4,7 +4,7 @@ local ServerRpcCommands = {
   GAME_OVER = "gameOver",
 }
 
-local ServerRpcCommands = {
+local ClientRpcCommands = {
   ULT = "ult"
 }
 
