@@ -1,5 +1,5 @@
 local ServerRpcCommands = {
-  BALL_UPDATE = "ballUpdate",
+  BALL_UPDATE_FROM_COUNTDOWN = "ballUpdateFromCountdown",
 }
 TIMER_CONST = 5 -- 1s Ready + 3s countdown + 1s Let it rip
 
@@ -24,7 +24,7 @@ local function serverSendPosUpdate(dt)
     end
 
     local updateMessage = {
-      cmd = ServerRpcCommands.BALL_UPDATE,
+      cmd = ServerRpcCommands.BALL_UPDATE_FROM_COUNTDOWN,
       balls = ballData,
     }
 
@@ -41,7 +41,7 @@ local function acceptRpcClient()
   if data then
     local message = json.decode(data)
 
-    if message.cmd == ServerRpcCommands.BALL_UPDATE then
+    if message.cmd == ServerRpcCommands.BALL_UPDATE_FROM_COUNTDOWN then
       -- Process ball updates
       for _, ballData in ipairs(message.balls) do
         local id = ballData.id
