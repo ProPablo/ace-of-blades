@@ -188,17 +188,15 @@ function ripped:draw()
   love.graphics.setColor(0, 0, 1)
   love.graphics.print(math.floor(beyblades[2].health + 0.5), winWidth * (3 / 4), 250, 0, 2, 2)
   love.graphics.setColor(1, 1, 1)
+
+  local ultMsg = "Press [SPACE] to Ult"
   if isServer then
     if beyblades[1].hasUlt then
-      love.graphics.print("Has Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
-    else
-      love.graphics.print("No Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
+      love.graphics.print(ultMsg, winWidth / 3, windHeight / 2, 0, 2, 2)
     end
   else
     if beyblades[2].hasUlt then
-      love.graphics.print("Has Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
-    else
-      love.graphics.print("No Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
+      love.graphics.print(ultMsg, winWidth / 3, windHeight / 2, 0, 2, 2)
     end
   end
 end
@@ -220,6 +218,13 @@ local function updateBeyblade(dt, id)
   local localBeyblade = beyblades[id]
   localBeyblade.health = localBeyblade.health - dt * beybladeDOT
   local remappedAv = remap(localBeyblade.health, 0, beybladeMaxHealth, 0, MAX_ANGULAR_VEL)
+  if localBeyblade.chosenShape == SHAPE.STICK then
+    if localBeyblade.stickEndTime and love.timer.getTime() < localBeyblade.stickEndTime then
+      remappedAv = remappedAv * 5 -- Halve the angular velocity for stick shape during ult
+    else
+      localBeyblade.stickEndTime = nil -- Reset stick end time if ult is over
+    end
+  end
   localBeyblade.body:setAngularVelocity(remappedAv * localBeyblade.direction)
 
   if localBeyblade.health <= 0 then
@@ -271,7 +276,7 @@ function handleUlt(blade)
     print("Stick shape ult activated for " .. blade.id)
   elseif (chosenShape == SHAPE.CIRCLE) then
     print("Circle shape ult activated for " .. blade.id)
-    blade.health = blade.health + 5 -- Heal for circle shape
+    blade.health = blade.health + 1 -- Heal for circle shape
   elseif (chosenShape == SHAPE.PENTAGON) then
     local otherBlade = nil
     if blade.id == 1 then
