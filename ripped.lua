@@ -223,7 +223,7 @@ function ripped:update(dt)
 
     serverSendPosUpdate(dt)
   else
-    sendCommandFromClient()
+    -- sendCommandFromClient()
     acceptRpcClient()
   end
 end
