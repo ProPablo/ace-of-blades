@@ -1,16 +1,17 @@
 local ServerRpcCommands = {
   SERVER_TIME = "serverTime",
   BALL_UPDATE = "ballUpdate",
+  ULTED_FROM_SERVER = "ultedFromServer",
   GAME_OVER = "gameOver",
 }
 
 local ClientRpcCommands = {
-  ULT = "ult"
+  ULTED_FROM_CLIENT = "ultedFromClient"
 }
 
-local function sendCommandFromClient()
+local function sendUltFromClient()
   local message = {
-    shape = beyblade[2].chosenShape
+    cmd = ClientRpcCommands.ULTED_FROM_CLIENT,
   }
 
   local jsonData = json.encode(message)
@@ -22,31 +23,11 @@ local function acceptRpcClient()
   local data, err = udp:receive()
   if data then
     local message = json.decode(data)
-
-    if message.cmd == ServerRpcCommands.BALL_UPDATE then
-      -- Update server time
-      if message.serverTime then
-        serverTime = message.serverTime
-      end
-
-      -- Process ball updates
-      for _, ballData in ipairs(message.balls) do
-        local id = ballData.id
-        if not beyblades[id] then
-          beyblades[id] = {
-            id = id,
-            body = love.physics.newBody(world, ballData.x, ballData.y, "dynamic")
-          }
-        end
-        beyblades[id].health = ballData.health
-        local body = beyblades[id].body
-        body:setPosition(ballData.x, ballData.y)
-        body:setLinearVelocity(ballData.vx, ballData.vy)
-        body:setAngularVelocity(ballData.av)
-        if ballData.angle then
-          body:setAngle(ballData.angle)
-        end
-      end
+    if message.cmd == ServerRpcCommands.ULTED_FROM_SERVER then
+      print("Received ult command from client")
+      beyblades[1].hasUlt = false
+    else
+      -- print("Unknown command: " .. message.cmd)
     end
 
     if message.cmd == ServerRpcCommands.GAME_OVER then
@@ -56,6 +37,19 @@ local function acceptRpcClient()
     end
   elseif err ~= "timeout" then
     print("Error receiving from server: " .. err)
+  end
+end
+
+local function acceptRpcServer(dt)
+  local data, msg_or_ip, port = udp:receivefrom()
+  if data then
+    local message = json.decode(data)
+    if message.cmd == ClientRpcCommands.ULTED_FROM_CLIENT then
+      print("Received ult command from client")
+      beyblades[2].hasUlt = false
+    else
+      print("Unknown command: " .. message.cmd)
+    end
   end
 end
 
@@ -95,6 +89,20 @@ local function serverSendPosUpdate(dt)
     if client then
       udp:sendto(jsonData, client.ip, client.port)
     end
+  end
+end
+
+local function serverSendUlt()
+  local updateMessage = {
+    cmd = ServerRpcCommands.ULTED_FROM_SERVER,
+    hasUlt = false,
+    serverTime = serverTime
+  }
+
+  local jsonData = json.encode(updateMessage)
+
+  if client then
+    udp:sendto(jsonData, client.ip, client.port)
   end
 end
 
@@ -147,11 +155,25 @@ function ripped:draw()
   drawBlade(1)
   drawBlade(2)
   local winWidth = love.graphics.getWidth()
+  local windHeight = love.graphics.getHeight()
   love.graphics.setColor(1, 0, 0)
   love.graphics.print(math.floor(beyblades[1].health + 0.5), winWidth / 4, 250, 0, 2, 2)
   love.graphics.setColor(0, 0, 1)
   love.graphics.print(math.floor(beyblades[2].health + 0.5), winWidth * (3 / 4), 250, 0, 2, 2)
   love.graphics.setColor(1, 1, 1)
+  if isServer then
+    if beyblades[1].hasUlt then
+      love.graphics.print("Has Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
+    else
+      love.graphics.print("No Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
+    end
+  else
+    if beyblades[2].hasUlt then
+      love.graphics.print("Has Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
+    else
+      love.graphics.print("No Ult", winWidth / 2, windHeight / 2, 0, 2, 2)
+    end
+  end
 end
 
 beybladeDOT = 5
@@ -212,9 +234,26 @@ local function moveTowardsOpponentInstant(b1, b2)
   end
 end
 
+function handleUlt(blade)
+  local chosenShape = blade.chosenShape
+  if (chosenShape == SHAPE.STICK) then
+    beyblades[1].body:setAngularVelocity(0)
+  elseif (chosenShape == SHAPE.CIRCLE) then
+    beyblades[1].body:setAngularVelocity(0)
+  elseif (chosenShape == SHAPE.PENTAGON) then
+    beyblades[1].body:setAngularVelocity(0)
+  end
+end
+
 function ripped:update(dt)
   world:update(dt)
   if isServer then
+    if (love.keyboard.isDown("space") and beyblades[1].hasUlt) then
+      beyblades[1].hasUlt = false
+      serverSendUlt()
+      handleUlt(beyblades[1])
+    end
+
     updateBeyblade(dt, 1)
     updateBeyblade(dt, 2)
 
@@ -225,8 +264,13 @@ function ripped:update(dt)
 
 
     serverSendPosUpdate(dt)
+    acceptRpcServer(dt)
   else
-    -- sendCommandFromClient()
+    if (love.keyboard.isDown("space") and beyblades[2].hasUlt) then
+      beyblades[2].hasUlt = false
+      sendUltFromClient()
+      handleUlt(beyblades[2])
+    end
     acceptRpcClient()
   end
 end
