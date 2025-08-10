@@ -35,7 +35,7 @@ function readArgs(args)
 end
 
 function drawDebug()
-    love.graphics.print(val, 100, 200)
+    -- love.graphics.print(val, 100, 200)
 end
 
 

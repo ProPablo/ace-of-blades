@@ -219,7 +219,7 @@ function ready:draw()
     love.graphics.circle("line", love.mouse.getX(), love.mouse.getY(), circleRad)
   end
 
-  love.graphics.print(setMsg, screen.width / 2, 200, 0, 2, 2)
+  love.graphics.print(setMsg, screen.width / 2.5, 200, 0, 2, 2)
 end
 
 function ready:leave()
