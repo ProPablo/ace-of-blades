@@ -174,9 +174,10 @@ end
 
 function gameover:draw()
     -- Draw background with subtle gradient
-    love.graphics.setColor(0.1, 0.1, 0.2, 0.8)
-    love.graphics.rectangle("fill", 0, 0, screen.width, screen.height)
+    -- love.graphics.setColor(0.1, 0.1, 0.2, 0.8)
+    -- love.graphics.rectangle("fill", 0, 0, screen.width, screen.height)
 
+    drawBackground()
 
     -- Draw winner beyblade (intact)
     if loserId == 1 then

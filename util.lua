@@ -72,3 +72,12 @@ function flushUdpBuffer(udp)
         print("Flushed packet from", ip, port, ":", data)
     end
 end
+
+
+function drawBackground()
+
+    love.graphics.setShader(backgroundShader)
+    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(),  love.graphics.getHeight())
+    love.graphics.setShader()
+
+end

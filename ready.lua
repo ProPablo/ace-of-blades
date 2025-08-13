@@ -200,6 +200,7 @@ function ready:update(dt)
 end
 
 function ready:draw()
+  drawBackground()
   local setMsg = ""
   local showCursor = false
   if isServer then

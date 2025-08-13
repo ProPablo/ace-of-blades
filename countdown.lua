@@ -68,6 +68,8 @@ function countdown:enter()
 end
 
 function countdown:draw()
+  drawBackground()
+
   drawBlade(1)
   drawBlade(2)
   local text = ""

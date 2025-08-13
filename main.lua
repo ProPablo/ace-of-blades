@@ -51,6 +51,27 @@ function love.load(args)
         height = love.graphics.getHeight()
     }
 
+    -- https://stackoverflow.com/questions/15095909/from-rgb-to-hsv-in-opengl-glsl
+    -- https://www.shadertoy.com/view/wXVXDK
+
+    -- init shader
+    backgroundShader = love.graphics.newShader [[
+    
+        extern number iTime = 0;
+        vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ){
+            vec2 screen_size = vec2(love_ScreenSize.x, love_ScreenSize.y);
+            vec2 norm_coords = (screen_coords / screen_size);
+            vec3 col = 0.5 + 0.5 * cos(iTime + norm_coords.xyx + vec3(0.0, 2.0, 4.0));
+            //col = col - vec3(0.5); 
+
+            // Calculate luminance (perceived brightness)
+            float gray = dot(col, vec3(0.299, 0.587, 0.114));
+            // Mix toward grayscale to reduce saturation
+            col = mix(vec3(gray), col, 0.2);
+            return vec4(col, 1.0);
+            }
+    ]]
+
 
     Gamestate.registerEvents()
     Gamestate.switch(lobby)
@@ -88,4 +109,5 @@ end
 
 function love:update(dt)
     serverTime = love.timer.getTime()
+    backgroundShader:send("iTime", serverTime)
 end

@@ -98,10 +98,12 @@ function prep:enter()
   prepBeyblade(beyblades[1])
   prepBeyblade(beyblades[2])
   setupBlocks()
-
 end
 
 function prep:draw()
+
+  drawBackground()
+
   -- Shape options (only text now)
   love.graphics.reset()
 

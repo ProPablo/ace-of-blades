@@ -175,6 +175,9 @@ function ripped:enter()
 end
 
 function ripped:draw()
+
+  drawBackground()
+
   drawBlocks()
 
   drawBlade(1)
