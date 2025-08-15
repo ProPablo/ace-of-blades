@@ -179,11 +179,14 @@ function ripped:draw()
     end
 
     love.graphics.setColor(0, 0, 0)
-    -- Draw ping at top loeft
-    -- TODO make look better with ping in ms
-    -- also invert to make it packet per sec
-    love.graphics.print("ping" .. ping, 20, 20)
-  love.graphics.setColor(1, 1, 1)
+    local pingDisplay = ping * 1000
+    local serverPacketRate = 1000 / pingDisplay
+    pingDisplay = string.format("%.2f", pingDisplay)
+    serverPacketRate = string.format("%.2f", serverPacketRate)
+    local pingText = "Ping: " .. pingDisplay .. " ms" .. "\nServer Packet Rate: " .. serverPacketRate
+
+    love.graphics.print(pingText, 20, 20)
+    love.graphics.setColor(1, 1, 1)
   end
 end
 

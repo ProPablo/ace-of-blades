@@ -27,6 +27,11 @@ local function readArgs(args)
             debugMode = true
             print("Debug mode disabled")
         end
+
+        -- if v == "-f" then
+        --     isFakePingEnabled = true
+        --     print("Fake ping enabled")
+        -- end
     end
 
     if not isServer then

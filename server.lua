@@ -10,7 +10,7 @@ function setupServer()
         hostAddress = "*"
     end
     udp:setsockname(hostAddress, port) -- Bind to localhost and the specified port
-    udp:settimeout(0)                    -- Set to non-blocking mode
+    udp:settimeout(0)                  -- Set to non-blocking mode
     print("Server started on port " .. port)
 end
 
@@ -38,4 +38,18 @@ function acceptClient()
     elseif msg_or_ip ~= "timeout" then
         print("Error receiving from client: " .. err)
     end
+end
+
+pendingMessages = {}
+function sendToClient(message)
+    if not isFakePingEnabled then
+        udp:sendto(jsonData, client.ip, client.port)
+        return
+    end
+
+    pendingMessages[#pendingMessages + 1] = message
+end
+
+function updateServer(dt)
+
 end

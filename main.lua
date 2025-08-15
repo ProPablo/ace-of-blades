@@ -5,6 +5,7 @@ loserId = nil
 isServer = false
 port = 12345
 udp = {}
+isFakePingEnabled = false
 
 -- FORCE VALUES
 val = 0 -- establish a variable for later use
@@ -74,4 +75,11 @@ end
 function love:update(dt)
     serverTime = love.timer.getTime()
     backgroundShader:send("iTime", serverTime)
+
+    if isServer then 
+        if love.keyboard.isDown("p") then
+            isFakePingEnabled = not isFakePingEnabled
+        end
+
+    end
 end
