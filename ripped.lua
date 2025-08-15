@@ -26,31 +26,8 @@ local function acceptRpcClient()
   if data then
     local message = json.decode(data)
     if message.cmd == ServerRpcCommands.BALL_UPDATE then
-      -- Update server time
-      if message.serverTime then
-        serverTime = message.serverTime
-      end
-
-      -- Process ball updates
-      for _, ballData in ipairs(message.balls) do
-        local id = ballData.id
-        if not beyblades[id] then
-          beyblades[id] = {
-            id = id,
-            body = love.physics.newBody(world, ballData.x, ballData.y, "dynamic")
-          }
-        end
-        beyblades[id].health = ballData.health
-        local body = beyblades[id].body
-        body:setPosition(ballData.x, ballData.y)
-        body:setLinearVelocity(ballData.vx, ballData.vy)
-        body:setAngularVelocity(ballData.av)
-        if ballData.angle then
-          body:setAngle(ballData.angle)
-        end
-      end
+      rippedAcceptBallUpdate(message)
     end
-
     if message.cmd == ServerRpcCommands.ULTED_FROM_SERVER then
       print("Received ult command from client")
       beyblades[1].hasUlt = false
@@ -200,6 +177,13 @@ function ripped:draw()
     if beyblades[2].hasUlt then
       love.graphics.print(ultMsg, winWidth / 3, windHeight / 2, 0, 2, 2)
     end
+
+    love.graphics.setColor(0, 0, 0)
+    -- Draw ping at top loeft
+    -- TODO make look better with ping in ms
+    -- also invert to make it packet per sec
+    love.graphics.print("ping" .. ping, 20, 20)
+  love.graphics.setColor(1, 1, 1)
   end
 end
 
@@ -222,7 +206,7 @@ local function updateBeyblade(dt, id)
   local remappedAv = UTIL.remap(localBeyblade.health, 0, beybladeMaxHealth, 0, MAX_ANGULAR_VEL)
   if localBeyblade.chosenShape == SHAPE.STICK then
     if localBeyblade.stickEndTime and love.timer.getTime() < localBeyblade.stickEndTime then
-      remappedAv = remappedAv * 5 -- Halve the angular velocity for stick shape during ult
+      remappedAv = remappedAv * 5      -- Halve the angular velocity for stick shape during ult
     else
       localBeyblade.stickEndTime = nil -- Reset stick end time if ult is over
     end

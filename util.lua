@@ -73,6 +73,11 @@ local function drawBackground()
     love.graphics.setShader()
 end
 
+local function camShake(cam, shakeScalar)
+    cam.x = cam.x + math.random(- shakeScalar, shakeScalar)
+    cam.y = cam.y + math.random(- shakeScalar, shakeScalar)
+end
+
 return {
     setToSecondMonitor = setToSecondMonitor,
     readArgs = readArgs,
@@ -80,4 +85,6 @@ return {
     lerp = lerp,
     flushUdpBuffer = flushUdpBuffer,
     drawBackground = drawBackground,
+    camShake = camShake,
 }
+
