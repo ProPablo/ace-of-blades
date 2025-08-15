@@ -62,19 +62,18 @@ function love.load(args)
             vec2 screen_size = vec2(love_ScreenSize.x, love_ScreenSize.y);
             vec2 norm_coords = (screen_coords / screen_size);
             vec3 col = 0.5 + 0.5 * cos(iTime + norm_coords.xyx + vec3(0.0, 2.0, 4.0));
-            //col = col - vec3(0.5); 
-
-            // Calculate luminance (perceived brightness)
             float gray = dot(col, vec3(0.299, 0.587, 0.114));
-            // Mix toward grayscale to reduce saturation
             col = mix(vec3(gray), col, 0.2);
             return vec4(col, 1.0);
             }
     ]]
 
+    camera = require("libs/hump/camera")
+    camera = camera()
 
     Gamestate.registerEvents()
     Gamestate.switch(lobby)
+
 end
 
 function lobby:enter()

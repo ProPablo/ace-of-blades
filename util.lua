@@ -81,3 +81,8 @@ function drawBackground()
     love.graphics.setShader()
 
 end
+
+function camShake(cam, shakeScalar)
+    cam.x = cam.x + math.random(- shakeScalar, shakeScalar)
+    cam.y = cam.y + math.random(- shakeScalar, shakeScalar)
+end
