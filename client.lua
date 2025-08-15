@@ -70,11 +70,11 @@ end
 local function interpolateBallState(state1, state2, t)
     return {
         id = state1.id,
-        x = lerp(state1.x, state2.x, t),
-        y = lerp(state1.y, state2.y, t),
-        vx = lerp(state1.vx, state2.vx, t),
-        vy = lerp(state1.vy, state2.vy, t),
-        av = lerp(state1.av, state2.av, t)
+        x = UTIL.lerp(state1.x, state2.x, t),
+        y = UTIL.lerp(state1.y, state2.y, t),
+        vx = UTIL.lerp(state1.vx, state2.vx, t),
+        vy = UTIL.lerp(state1.vy, state2.vy, t),
+        av = UTIL.lerp(state1.av, state2.av, t)
     }
 end
 

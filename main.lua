@@ -1,10 +1,5 @@
 -- Run this to hot reload
 -- nodemon --exec "love ." --ext lua --ignore node_modules
-lobby = {}
-prep = {}
-ready = {}
-countdown = {}
-ripped = {}
 loserId = nil
 
 isServer = false
@@ -33,8 +28,8 @@ function love.load(args)
     if arg[#arg] == "-debug" then
         require("mobdebug").start()
     end
-    require("util")
     require("blade")
+    require("lobby")
     require("blocks")
     require("prep")
     require("ready")
@@ -42,7 +37,9 @@ function love.load(args)
     require("ripped")
     require("game")
     require("gameover")
-    readArgs(args)
+    UTIL = require("util")
+
+    UTIL.readArgs(args)
 
     Gamestate = require("libs/hump/gamestate")
     vector = require "libs.hump.vector"
@@ -53,16 +50,14 @@ function love.load(args)
 
     -- https://stackoverflow.com/questions/15095909/from-rgb-to-hsv-in-opengl-glsl
     -- https://www.shadertoy.com/view/wXVXDK
-
     -- init shader
     backgroundShader = love.graphics.newShader [[
-    
         extern number iTime = 0;
         vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ){
             vec2 screen_size = vec2(love_ScreenSize.x, love_ScreenSize.y);
             vec2 norm_coords = (screen_coords / screen_size);
             vec3 col = 0.5 + 0.5 * cos(iTime + norm_coords.xyx + vec3(0.0, 2.0, 4.0));
-            //col = col - vec3(0.5); 
+            //col = col - vec3(0.5);
 
             // Calculate luminance (perceived brightness)
             float gray = dot(col, vec3(0.299, 0.587, 0.114));
@@ -72,39 +67,8 @@ function love.load(args)
             }
     ]]
 
-
     Gamestate.registerEvents()
     Gamestate.switch(lobby)
-end
-
-function lobby:enter()
-    -- Initialize menu state
-    love.graphics.setBackgroundColor(0.2, 0.2, 0.2)  -- Set background color
-    love.graphics.setFont(love.graphics.newFont(20)) -- Set font size
-    love.window.setTitle("Ace of Blades")
-    if isServer then
-        require("server")
-        setupServer()
-    else
-        require("client")
-        love.timer.sleep(0.1)
-        setupClient()
-        setToSecondMonitor()
-    end
-
-    flushUdpBuffer(udp)
-end
-
-function lobby:draw()
-    love.graphics.setColor(1, 1, 1) -- Set color to white
-    love.graphics.print("Welcome to Ace of Blades!" .. (isServer and " (Server Mode)" or " (Client Mode)"), 100, 150)
-end
-
-function lobby:update(dt)
-    if isServer then
-        acceptClient()
-    else
-    end
 end
 
 function love:update(dt)

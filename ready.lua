@@ -1,3 +1,5 @@
+ready = {}
+
 local ClientRpcCommands = {
   LAUNCH_VEC = "launchVec",
 
@@ -200,7 +202,7 @@ function ready:update(dt)
 end
 
 function ready:draw()
-  drawBackground()
+  UTIL.drawBackground()
   local setMsg = ""
   local showCursor = false
   if isServer then
@@ -210,7 +212,6 @@ function ready:draw()
     setMsg = clientHasSetLaunchVec and "SET" or "READYING..."
     if not isDragging and not clientHasSetLaunchVec then showCursor = true end
   end
-  drawDebug()
   drawBlocks()
   drawBlade(beyblade.id)
   drawRip()

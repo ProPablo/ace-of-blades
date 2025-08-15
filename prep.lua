@@ -1,3 +1,5 @@
+prep = {}
+
 local ClientRpcCommands = {
   HAS_SELECTED = "selected",
 }
@@ -101,9 +103,7 @@ function prep:enter()
 end
 
 function prep:draw()
-
-  drawBackground()
-
+  UTIL.drawBackground()
   -- Shape options (only text now)
   love.graphics.reset()
 

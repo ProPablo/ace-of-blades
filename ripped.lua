@@ -1,3 +1,5 @@
+ripped = {}
+
 local ServerRpcCommands = {
   SERVER_TIME = "serverTime",
   BALL_UPDATE = "ballUpdate",
@@ -175,8 +177,7 @@ function ripped:enter()
 end
 
 function ripped:draw()
-
-  drawBackground()
+  UTIL.drawBackground()
 
   drawBlocks()
 
@@ -218,7 +219,7 @@ end
 local function updateBeyblade(dt, id)
   local localBeyblade = beyblades[id]
   localBeyblade.health = localBeyblade.health - dt * beybladeDOT
-  local remappedAv = remap(localBeyblade.health, 0, beybladeMaxHealth, 0, MAX_ANGULAR_VEL)
+  local remappedAv = UTIL.remap(localBeyblade.health, 0, beybladeMaxHealth, 0, MAX_ANGULAR_VEL)
   if localBeyblade.chosenShape == SHAPE.STICK then
     if localBeyblade.stickEndTime and love.timer.getTime() < localBeyblade.stickEndTime then
       remappedAv = remappedAv * 5 -- Halve the angular velocity for stick shape during ult

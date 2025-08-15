@@ -1,3 +1,5 @@
+countdown = {}
+
 local ServerRpcCommands = {
   BALL_UPDATE_FROM_COUNTDOWN = "ballUpdateFromCountdown",
 }
@@ -68,7 +70,7 @@ function countdown:enter()
 end
 
 function countdown:draw()
-  drawBackground()
+  UTIL.drawBackground()
 
   drawBlade(1)
   drawBlade(2)
